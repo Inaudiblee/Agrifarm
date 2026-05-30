@@ -8,7 +8,17 @@ export const REDIS = "REDIS_CLIENT";
   providers: [
     {
       provide: REDIS,
-      useFactory: () => new Redis(process.env.REDIS_URL ?? "redis://localhost:6379")
+      useFactory: () => {
+        const client = new Redis(process.env.REDIS_URL ?? "redis://localhost:6379", {
+          lazyConnect: true,
+          enableOfflineQueue: false,
+          maxRetriesPerRequest: 1
+        });
+        client.on("error", (error) => {
+          console.warn(`[redis] ${error.message}`);
+        });
+        return client;
+      }
     }
   ],
   exports: [REDIS]

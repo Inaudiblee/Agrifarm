@@ -15,7 +15,8 @@
     "build:api": "npm run build -w apps/api",
     "db:generate": "npm run prisma:generate -w apps/api",
     "db:migrate": "npm run prisma:migrate -w apps/api",
-    "db:seed": "npm run prisma:seed -w apps/api"
+    "db:seed": "npm run prisma:seed -w apps/api",
+    "qa:api": "node scripts/api-smoke-test.js"
   },
   "devDependencies": {
     "concurrently": "^9.2.1"

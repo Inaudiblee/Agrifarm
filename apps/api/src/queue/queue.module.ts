@@ -8,10 +8,15 @@ export const ORDER_QUEUE = "ORDER_QUEUE";
   providers: [
     {
       provide: ORDER_QUEUE,
-      useFactory: () =>
-        new Queue("orders", {
+      useFactory: () => {
+        const queue = new Queue("orders", {
           connection: { url: process.env.REDIS_URL ?? "redis://localhost:6379" }
-        })
+        });
+        queue.on("error", (error) => {
+          console.warn(`[queue:orders] ${error.message}`);
+        });
+        return queue;
+      }
     }
   ],
   exports: [ORDER_QUEUE]
