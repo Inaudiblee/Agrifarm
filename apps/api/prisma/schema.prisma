@@ -126,6 +126,25 @@ enum NotificationType {
   SYSTEM
 }
 
+enum FarmingSiteType {
+  BACKYARD
+  COMMUNITY_GARDEN
+  ROOFTOP
+  SCHOOL_GARDEN
+  INSTITUTIONAL
+  COMMERCIAL
+  OTHER
+}
+
+enum CultivationStatus {
+  PLANNED
+  PLANTED
+  GROWING
+  HARVESTING
+  COMPLETED
+  CANCELLED
+}
+
 model User {
   id                   String            @id @default(cuid())
   email                String            @unique @db.VarChar(255)
@@ -204,16 +223,25 @@ model Store {
 }
 
 model Barangay {
-  id             String             @id @default(cuid())
-  name           String             @db.VarChar(120)
-  normalizedName String             @unique @db.VarChar(120)
-  city           String             @default("Pasig") @db.VarChar(120)
-  province       String             @default("Metro Manila") @db.VarChar(120)
-  isActive       Boolean            @default(true)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  id             String                        @id @default(cuid())
+  name           String                        @db.VarChar(120)
+  normalizedName String                        @unique @db.VarChar(120)
+  city           String                        @default("Pasig") @db.VarChar(120)
+  province       String                        @default("Metro Manila") @db.VarChar(120)
+  isActive       Boolean                       @default(true)
+  createdAt      DateTime                      @default(now())
+  updatedAt      DateTime                      @updatedAt
   addresses      Address[]
   storeAreas     StoreServiceArea[]
+  urbanFarmers   UrbanFarmer[]
+  farmingSites   FarmingSite[]
+  associations   FarmingAssociation[]
+  cropCalendars  SeasonalCropCalendar[]
+  marketPrices   MarketPriceObservation[]
+  availability   CropAvailabilityObservation[]
+  supplyReports  SupplyReport[]
+  salesRecords   AgriculturalSaleRecord[]
+  statistics     AgriculturalStatistic[]
 
   @@index([city, province])
   @@index([isActive])
@@ -622,4 +650,404 @@ model Notification {
   @@index([userId, readAt])
   @@index([type])
   @@index([createdAt])
+}
+
+model AgriculturalDataSource {
+  id                       String                        @id @default(cuid())
+  name                     String                        @db.VarChar(255)
+  organization             String?                       @db.VarChar(255)
+  referenceUrl             String?
+  notes                    String?
+  importedAt               DateTime                      @default(now())
+  createdAt                DateTime                      @default(now())
+  updatedAt                DateTime                      @updatedAt
+  urbanFarmers             UrbanFarmer[]
+  farmingSites             FarmingSite[]
+  associations             FarmingAssociation[]
+  crops                    Crop[]
+  cultivations             CultivationRecord[]
+  harvests                 HarvestRecord[]
+  cropCalendars            SeasonalCropCalendar[]
+  marketPrices             MarketPriceObservation[]
+  availabilityObservations CropAvailabilityObservation[]
+  supplyReports            SupplyReport[]
+  salesRecords             AgriculturalSaleRecord[]
+  statistics               AgriculturalStatistic[]
+
+  @@index([organization])
+  @@index([importedAt])
+}
+
+model UrbanFarmer {
+  id                 String                     @id @default(cuid())
+  barangayId         String
+  sourceId           String?
+  externalRecordId   String?                    @db.VarChar(160)
+  registrationNumber String?                    @unique @db.VarChar(120)
+  fullName           String                     @db.VarChar(255)
+  registrationDate   DateTime?                  @db.Date
+  isActive           Boolean                    @default(true)
+  contactDetails     Json?
+  attributes         Json?
+  createdAt          DateTime                   @default(now())
+  updatedAt          DateTime                   @updatedAt
+  barangay           Barangay                   @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  source             AgriculturalDataSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  associationLinks   FarmingAssociationMember[]
+  siteLinks          FarmingSiteFarmer[]
+  cultivations       CultivationRecord[]
+  harvests           HarvestRecord[]
+  salesRecords       AgriculturalSaleRecord[]
+
+  @@unique([sourceId, externalRecordId])
+  @@index([barangayId])
+  @@index([sourceId])
+  @@index([isActive])
+}
+
+model FarmingAssociation {
+  id               String                     @id @default(cuid())
+  barangayId       String?
+  sourceId         String?
+  externalRecordId String?                    @db.VarChar(160)
+  name             String                     @db.VarChar(255)
+  registrationNo   String?                    @unique @db.VarChar(120)
+  establishedDate  DateTime?                  @db.Date
+  isActive         Boolean                    @default(true)
+  attributes       Json?
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  barangay         Barangay?                  @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  source           AgriculturalDataSource?    @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  members          FarmingAssociationMember[]
+  sites            FarmingSite[]
+
+  @@unique([sourceId, externalRecordId])
+  @@index([barangayId])
+  @@index([sourceId])
+  @@index([isActive])
+}
+
+model FarmingAssociationMember {
+  associationId String
+  farmerId      String
+  role          String?            @db.VarChar(120)
+  joinedAt      DateTime?          @db.Date
+  leftAt        DateTime?          @db.Date
+  association   FarmingAssociation @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  farmer        UrbanFarmer        @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@id([associationId, farmerId])
+  @@index([farmerId])
+}
+
+model FarmingSite {
+  id               String                        @id @default(cuid())
+  barangayId       String
+  associationId    String?
+  sourceId         String?
+  externalRecordId String?                       @db.VarChar(160)
+  name             String                        @db.VarChar(255)
+  siteType         FarmingSiteType
+  address          String?
+  areaSqm          Decimal?                      @db.Decimal(14, 2)
+  latitude         Decimal?                      @db.Decimal(10, 7)
+  longitude        Decimal?                      @db.Decimal(10, 7)
+  establishedDate  DateTime?                     @db.Date
+  isActive         Boolean                       @default(true)
+  attributes       Json?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  barangay         Barangay                      @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  association      FarmingAssociation?           @relation(fields: [associationId], references: [id], onDelete: SetNull)
+  source           AgriculturalDataSource?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  farmerLinks      FarmingSiteFarmer[]
+  cultivations     CultivationRecord[]
+  harvests         HarvestRecord[]
+  cropCalendars    SeasonalCropCalendar[]
+  availability     CropAvailabilityObservation[]
+  salesRecords     AgriculturalSaleRecord[]
+  statistics       AgriculturalStatistic[]
+
+  @@unique([sourceId, externalRecordId])
+  @@index([barangayId])
+  @@index([associationId])
+  @@index([sourceId])
+  @@index([siteType])
+  @@index([isActive])
+}
+
+model FarmingSiteFarmer {
+  siteId    String
+  farmerId  String
+  role      String?     @db.VarChar(120)
+  startedAt DateTime?   @db.Date
+  endedAt   DateTime?   @db.Date
+  site      FarmingSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+  farmer    UrbanFarmer @relation(fields: [farmerId], references: [id], onDelete: Cascade)
+
+  @@id([siteId, farmerId])
+  @@index([farmerId])
+}
+
+model Crop {
+  id               String                        @id @default(cuid())
+  sourceId         String?
+  externalRecordId String?                       @db.VarChar(160)
+  commonName       String                        @db.VarChar(160)
+  scientificName   String?                       @db.VarChar(255)
+  variety          String?                       @db.VarChar(160)
+  category         String?                       @db.VarChar(120)
+  defaultUnit      String                        @default("kg") @db.VarChar(30)
+  isActive         Boolean                       @default(true)
+  attributes       Json?
+  createdAt        DateTime                      @default(now())
+  updatedAt        DateTime                      @updatedAt
+  source           AgriculturalDataSource?       @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  cultivations     CultivationRecord[]
+  harvests         HarvestRecord[]
+  cropCalendars    SeasonalCropCalendar[]
+  marketPrices     MarketPriceObservation[]
+  availability     CropAvailabilityObservation[]
+  supplyReports    SupplyReport[]
+  salesRecords     AgriculturalSaleRecord[]
+  statistics       AgriculturalStatistic[]
+
+  @@unique([commonName, variety])
+  @@unique([sourceId, externalRecordId])
+  @@index([sourceId])
+  @@index([category])
+  @@index([isActive])
+}
+
+model CultivationRecord {
+  id                      String                  @id @default(cuid())
+  siteId                  String
+  cropId                  String
+  farmerId                String?
+  sourceId                String?
+  externalRecordId        String?                 @db.VarChar(160)
+  plantingDate            DateTime                @db.Date
+  expectedHarvestDate     DateTime?               @db.Date
+  completedAt             DateTime?               @db.Date
+  status                  CultivationStatus       @default(PLANTED)
+  areaPlantedSqm          Decimal?                @db.Decimal(14, 2)
+  quantityPlanted         Decimal?                @db.Decimal(14, 3)
+  plantingUnit            String?                 @db.VarChar(30)
+  expectedHarvestQuantity Decimal?                @db.Decimal(14, 3)
+  harvestUnit             String?                 @db.VarChar(30)
+  attributes              Json?
+  createdAt               DateTime                @default(now())
+  updatedAt               DateTime                @updatedAt
+  site                    FarmingSite             @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  crop                    Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  farmer                  UrbanFarmer?            @relation(fields: [farmerId], references: [id], onDelete: SetNull)
+  source                  AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+  harvests                HarvestRecord[]
+
+  @@unique([sourceId, externalRecordId])
+  @@index([siteId, plantingDate])
+  @@index([cropId, plantingDate])
+  @@index([farmerId])
+  @@index([sourceId])
+  @@index([status])
+}
+
+model HarvestRecord {
+  id                 String                  @id @default(cuid())
+  cultivationId      String?
+  siteId             String
+  cropId             String
+  farmerId           String?
+  sourceId           String?
+  externalRecordId   String?                 @db.VarChar(160)
+  harvestedAt        DateTime                @db.Date
+  quantity           Decimal                 @db.Decimal(14, 3)
+  unit               String                  @db.VarChar(30)
+  marketableQuantity Decimal?                @db.Decimal(14, 3)
+  rejectedQuantity   Decimal?                @db.Decimal(14, 3)
+  attributes         Json?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  cultivation        CultivationRecord?      @relation(fields: [cultivationId], references: [id], onDelete: SetNull)
+  site               FarmingSite             @relation(fields: [siteId], references: [id], onDelete: Restrict)
+  crop               Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  farmer             UrbanFarmer?            @relation(fields: [farmerId], references: [id], onDelete: SetNull)
+  source             AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, harvestedAt])
+  @@index([siteId, harvestedAt])
+  @@index([farmerId])
+  @@index([cultivationId])
+  @@index([sourceId])
+}
+
+model SeasonalCropCalendar {
+  id                 String                  @id @default(cuid())
+  cropId             String
+  barangayId         String?
+  siteId             String?
+  sourceId           String?
+  externalRecordId   String?                 @db.VarChar(160)
+  seasonName         String?                 @db.VarChar(120)
+  effectiveYear      Int?
+  plantingStartMonth Int
+  plantingEndMonth   Int
+  harvestStartMonth  Int
+  harvestEndMonth    Int
+  notes              String?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  crop               Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay           Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  site               FarmingSite?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  source             AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, effectiveYear])
+  @@index([barangayId])
+  @@index([siteId])
+  @@index([sourceId])
+}
+
+model MarketPriceObservation {
+  id               String                  @id @default(cuid())
+  cropId           String
+  barangayId       String?
+  sourceId         String?
+  externalRecordId String?                 @db.VarChar(160)
+  observedAt       DateTime                @db.Date
+  marketName       String?                 @db.VarChar(255)
+  priceType        String?                 @db.VarChar(80)
+  price            Decimal                 @db.Decimal(14, 2)
+  currency         String                  @default("PHP") @db.VarChar(3)
+  unit             String                  @db.VarChar(30)
+  attributes       Json?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  crop             Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay         Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  source           AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, observedAt])
+  @@index([barangayId, observedAt])
+  @@index([sourceId])
+}
+
+model CropAvailabilityObservation {
+  id                String                  @id @default(cuid())
+  cropId            String
+  barangayId        String?
+  siteId            String?
+  sourceId          String?
+  externalRecordId  String?                 @db.VarChar(160)
+  periodStart       DateTime                @db.Date
+  periodEnd         DateTime                @db.Date
+  availableQuantity Decimal                 @db.Decimal(14, 3)
+  unit              String                  @db.VarChar(30)
+  availabilityLevel String?                 @db.VarChar(80)
+  attributes        Json?
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  crop              Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay          Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  site              FarmingSite?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  source            AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, periodStart])
+  @@index([barangayId, periodStart])
+  @@index([siteId])
+  @@index([sourceId])
+}
+
+model SupplyReport {
+  id               String                  @id @default(cuid())
+  cropId           String
+  barangayId       String?
+  sourceId         String?
+  externalRecordId String?                 @db.VarChar(160)
+  periodStart      DateTime                @db.Date
+  periodEnd        DateTime                @db.Date
+  unit             String                  @db.VarChar(30)
+  openingStock     Decimal?                @db.Decimal(14, 3)
+  producedQuantity Decimal?                @db.Decimal(14, 3)
+  inboundQuantity  Decimal?                @db.Decimal(14, 3)
+  outboundQuantity Decimal?                @db.Decimal(14, 3)
+  wasteQuantity    Decimal?                @db.Decimal(14, 3)
+  closingStock     Decimal?                @db.Decimal(14, 3)
+  attributes       Json?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  crop             Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay         Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  source           AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, periodStart])
+  @@index([barangayId, periodStart])
+  @@index([sourceId])
+}
+
+model AgriculturalSaleRecord {
+  id               String                  @id @default(cuid())
+  cropId           String
+  barangayId       String?
+  siteId           String?
+  farmerId         String?
+  sourceId         String?
+  externalRecordId String?                 @db.VarChar(160)
+  soldAt           DateTime                @db.Date
+  quantity         Decimal                 @db.Decimal(14, 3)
+  unit             String                  @db.VarChar(30)
+  unitPrice        Decimal?                @db.Decimal(14, 2)
+  totalAmount      Decimal                 @db.Decimal(14, 2)
+  currency         String                  @default("PHP") @db.VarChar(3)
+  channel          String?                 @db.VarChar(120)
+  attributes       Json?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  crop             Crop                    @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay         Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  site             FarmingSite?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  farmer           UrbanFarmer?            @relation(fields: [farmerId], references: [id], onDelete: SetNull)
+  source           AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([cropId, soldAt])
+  @@index([barangayId, soldAt])
+  @@index([siteId])
+  @@index([farmerId])
+  @@index([sourceId])
+}
+
+model AgriculturalStatistic {
+  id               String                  @id @default(cuid())
+  cropId           String?
+  barangayId       String?
+  siteId           String?
+  sourceId         String?
+  externalRecordId String?                 @db.VarChar(160)
+  metricName       String                  @db.VarChar(160)
+  periodStart      DateTime                @db.Date
+  periodEnd        DateTime                @db.Date
+  value            Decimal                 @db.Decimal(18, 4)
+  unit             String                  @db.VarChar(60)
+  dimensions       Json?
+  notes            String?
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  crop             Crop?                   @relation(fields: [cropId], references: [id], onDelete: Restrict)
+  barangay         Barangay?               @relation(fields: [barangayId], references: [id], onDelete: Restrict)
+  site             FarmingSite?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
+  source           AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
+
+  @@unique([sourceId, externalRecordId])
+  @@index([metricName, periodStart])
+  @@index([cropId, periodStart])
+  @@index([barangayId, periodStart])
+  @@index([siteId])
+  @@index([sourceId])
 }
