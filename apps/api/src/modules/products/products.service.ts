@@ -55,6 +55,23 @@ export class ProductsService {
     });
   }
 
+  async listMine(user: User) {
+    return this.prisma.product.findMany({
+      where: {
+        deletedAt: null,
+        store: { sellerProfile: { userId: user.id } }
+      },
+      include: {
+        store: { select: { id: true, name: true, slug: true, status: true } },
+        variants: { orderBy: { createdAt: "asc" } },
+        images: { orderBy: { displayOrder: "asc" } },
+        categories: { include: { category: true } },
+        _count: { select: { reviews: true } }
+      },
+      orderBy: { createdAt: "desc" }
+    });
+  }
+
   async create(
     user: User,
     input: {
