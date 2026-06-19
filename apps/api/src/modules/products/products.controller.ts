@@ -131,6 +131,13 @@ export class ProductsController {
     return this.productsService.list({ barangay, q });
   }
 
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles("SELLER")
+  @Get("mine")
+  mine(@Req() request: AuthenticatedRequest) {
+    return this.productsService.listMine(request.user!);
+  }
+
   @Get(":id")
   get(@Param("id") id: string) {
     return this.productsService.get(id);
