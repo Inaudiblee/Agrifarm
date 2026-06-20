@@ -177,7 +177,7 @@ function SellerSidebar({
   return (
     <aside className="seller-sidebar" aria-label="Seller navigation">
       <Link href="/" className="seller-sidebar-brand" aria-label="AgriFarm landing page">
-        <span className="premium-logo-mark">
+        <span className="seller-brand-mark">
           <Leaf size={22} />
         </span>
         <span>

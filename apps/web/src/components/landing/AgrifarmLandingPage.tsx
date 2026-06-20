@@ -2,20 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { FormEvent, useEffect, useMemo, useState } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
-  BarChart3,
   CheckCircle2,
   Leaf,
   LockKeyhole,
-  Mail,
   MapPin,
   Menu,
-  MessageCircle,
-  Phone,
-  Search,
   ShieldCheck,
   ShoppingCart,
   Sprout,
@@ -25,60 +19,207 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import {
-  categories,
-  marketplaceBenefits,
-  products,
-  stats,
-} from "@/data/landing";
 import { useLocale } from "@/components/locale-provider";
 import { getAuthToken, getAuthUser, type AuthUser } from "@/lib/auth-storage";
 import { getRoleHomeHref, isSeller } from "@/lib/auth-routing";
 
 const CONTENT = "/assets/agrifarm-content";
+const STORY = "/assets/agrifarm-story";
 
-const benefitIcons = [Leaf, Store, Sprout, MessageCircle, BarChart3, Truck];
-const heroHighlightIcons = [UserRound, Leaf, Truck];
-const trustIcons = [Leaf, ShieldCheck, LockKeyhole, Truck];
+const content = {
+  en: {
+    language: "English",
+    location: "Pasig City",
+    login: "Log in",
+    menu: "Menu",
+    nav: ["Find farmers", "Meet farmers", "Meals", "In season", "Why AgriFarm"],
+    hero: {
+      eyebrow: "Fresh from your community",
+      title: "Fresh Harvest Near You Today",
+      body: "Buy fresh produce from trusted farmers in your barangay, or bring your own harvest to more local families.",
+      buy: "Buy Fresh Produce",
+      sell: "Sell Your Harvest",
+      trust: "Verified local farmers",
+      safety: "Safe transactions",
+    },
+    map: {
+      eyebrow: "Find farmers",
+      title: "Farmers Near You",
+      body: "Choose a barangay to see how many farmers have fresh harvests today.",
+      legend: ["Many farmers", "Some farmers", "Few farmers"],
+      selected: "farmers available today",
+    },
+    farmers: {
+      eyebrow: "Meet farmers",
+      title: "Know Who Grows Your Food",
+      body: "Real farmers, clear locations, and trusted community ratings.",
+      view: "View Farm",
+      selected: "Selected farm",
+    },
+    meals: {
+      eyebrow: "Affordable meals",
+      title: "Affordable Meals This Week",
+      body: "Plan familiar family meals using today’s AgriFarm prices and available ingredients.",
+      estimated: "Estimated ingredient cost",
+      serves: "serves",
+      available: "ingredients available",
+      current: "Based on current market prices",
+      view: "View Ingredients",
+      hide: "Hide Ingredients",
+    },
+    trends: {
+      eyebrow: "Today’s harvest guide",
+      title: "Trending Crops & What’s in Season",
+      body: "Simple demand and harvest guidance—no complicated charts.",
+      season: "In season now",
+    },
+    journey: {
+      eyebrow: "Farm to table",
+      title: "From Harvest to Your Home",
+      body: "Four clear steps keep every order simple.",
+      steps: [
+        ["Harvest", "Picked fresh"],
+        ["Pack", "Packed safely"],
+        ["Deliver", "Brought locally"],
+        ["Home", "Enjoyed together"],
+      ],
+    },
+    why: {
+      eyebrow: "Why AgriFarm",
+      title: "Good Food. Fair Trade. Stronger Communities.",
+      body: "A marketplace designed around trust, clarity, and local livelihoods.",
+      items: [
+        ["Support local farmers", "Your purchase goes directly to Filipino farming families."],
+        ["Fair prices", "Clear prices help buyers budget and farmers earn fairly."],
+        ["Community impact", "Local buying keeps more value inside the community."],
+        ["Safe transactions", "Verified accounts and clear order steps protect every purchase."],
+      ],
+      cta: "Start Buying Fresh Produce",
+    },
+    account: { buyer: "Buyer account", seller: "Seller account", continue: "Continue" },
+  },
+  fil: {
+    language: "Tagalog",
+    location: "Lungsod ng Pasig",
+    login: "Mag-login",
+    menu: "Menu",
+    nav: ["Hanapin ang magsasaka", "Kilalanin sila", "Abot-kayang ulam", "Napapanahong ani", "Bakit AgriFarm"],
+    hero: {
+      eyebrow: "Sariwa mula sa inyong komunidad",
+      title: "Sariwang Ani Malapit sa Inyo Ngayon",
+      body: "Bumili ng sariwang produkto mula sa mapagkakatiwalaang magsasaka sa inyong barangay, o ibenta ang sariling ani sa mas maraming pamilya.",
+      buy: "Bumili ng Sariwang Produkto",
+      sell: "Ibenta ang Inyong Ani",
+      trust: "Beripikadong lokal na magsasaka",
+      safety: "Ligtas na transaksyon",
+    },
+    map: {
+      eyebrow: "Hanapin ang magsasaka",
+      title: "Mga Magsasakang Malapit sa Inyo",
+      body: "Pumili ng barangay para makita kung ilang magsasaka ang may sariwang ani ngayon.",
+      legend: ["Maraming magsasaka", "May ilang magsasaka", "Kaunting magsasaka"],
+      selected: "magsasakang may ani ngayon",
+    },
+    farmers: {
+      eyebrow: "Kilalanin ang magsasaka",
+      title: "Alamin Kung Sino ang Nagtanim ng Inyong Pagkain",
+      body: "Tunay na magsasaka, malinaw na lokasyon, at mapagkakatiwalaang rating.",
+      view: "Tingnan ang Bukid",
+      selected: "Napiling bukid",
+    },
+    meals: {
+      eyebrow: "Abot-kayang ulam",
+      title: "Abot-kayang Ulam Ngayong Linggo",
+      body: "Magplano ng pamilyar na ulam gamit ang presyo ngayon at mga sangkap na available sa AgriFarm.",
+      estimated: "Tinatayang halaga ng sangkap",
+      serves: "para sa",
+      available: "sangkap na available",
+      current: "Batay sa presyo sa palengke ngayon",
+      view: "Tingnan ang Sangkap",
+      hide: "Itago ang Sangkap",
+    },
+    trends: {
+      eyebrow: "Gabay sa ani ngayon",
+      title: "Patok at Napapanahong Ani",
+      body: "Simpleng gabay sa demand at ani—walang komplikadong chart.",
+      season: "Napapanahon ngayon",
+    },
+    journey: {
+      eyebrow: "Mula bukid hanggang hapag",
+      title: "Mula Ani Hanggang sa Inyong Tahanan",
+      body: "Apat na malinaw na hakbang para sa simpleng pag-order.",
+      steps: [
+        ["Ani", "Sariwang pinitas"],
+        ["Balot", "Maingat na inihanda"],
+        ["Hatid", "Direktang dinala"],
+        ["Hapag", "Sama-samang kain"],
+      ],
+    },
+    why: {
+      eyebrow: "Bakit AgriFarm",
+      title: "Masarap na Pagkain. Patas na Kita. Matatag na Komunidad.",
+      body: "Pamilihang dinisenyo para sa tiwala, linaw, at lokal na kabuhayan.",
+      items: [
+        ["Suportahan ang lokal na magsasaka", "Ang inyong bayad ay direktang tumutulong sa pamilyang magsasaka."],
+        ["Patas na presyo", "Malinaw na presyo para sa badyet ng mamimili at kita ng magsasaka."],
+        ["Tulong sa komunidad", "Ang lokal na pamimili ay nagpapanatili ng halaga sa komunidad."],
+        ["Ligtas na transaksyon", "Beripikadong account at malinaw na order para sa bawat pagbili."],
+      ],
+      cta: "Magsimulang Bumili ng Sariwang Produkto",
+    },
+    account: { buyer: "Account ng mamimili", seller: "Account ng seller", continue: "Magpatuloy" },
+  },
+} as const;
 
-function MotionSection({
-  id,
-  className,
-  children,
-}: {
-  id?: string;
-  className: string;
-  children: React.ReactNode;
-}) {
+const barangays = [
+  { name: "Pinagbuhatan", count: 23, level: "many", left: "24%", top: "25%" },
+  { name: "Rosario", count: 12, level: "some", left: "58%", top: "20%" },
+  { name: "Caniogan", count: 18, level: "many", left: "18%", top: "66%" },
+  { name: "Santolan", count: 7, level: "few", left: "72%", top: "60%" },
+  { name: "Manggahan", count: 9, level: "some", left: "48%", top: "76%" },
+] as const;
+
+const farmers = [
+  { name: "Mang Juan", rating: "4.9", reviews: 120, location: "Caniogan, Pasig", image: `${CONTENT}/hero-farmer-produce.jpg`, position: "50% 38%" },
+  { name: "Aling Rosa", rating: "4.8", reviews: 96, location: "Rosario, Pasig", image: `${CONTENT}/farmer-collective.jpg`, position: "28% 50%" },
+  { name: "Mang Pedro", rating: "5.0", reviews: 150, location: "Pinagbuhatan, Pasig", image: `${CONTENT}/farmer-collective.jpg`, position: "53% 50%" },
+  { name: "Aling Nena", rating: "4.7", reviews: 80, location: "Santolan, Pasig", image: `${CONTENT}/farmer-collective.jpg`, position: "76% 50%" },
+] as const;
+
+const meals = [
+  { name: "Ginisang Monggo", cost: "₱120", serves: "4", available: "5/6", image: `${STORY}/meal-ginisang-monggo.png`, ingredients: ["Monggo", "Malunggay", "Kamatis", "Sibuyas", "Bawang"] },
+  { name: "Pinakbet", cost: "₱160", serves: "4", available: "7/7", image: `${STORY}/meal-pinakbet.png`, ingredients: ["Kalabasa", "Talong", "Okra", "Sitaw", "Ampalaya", "Kamatis"] },
+  { name: "Tinolang Manok", cost: "₱220", serves: "5", available: "6/7", image: `${STORY}/meal-tinola.png`, ingredients: ["Manok", "Sayote", "Malunggay", "Luya", "Sibuyas"] },
+] as const;
+
+const crops = [
+  { name: "Kamatis", image: `${STORY}/crop-kamatis.png`, price: "₱35–₱45 / kilo", statusEn: "High demand", statusFil: "Mataas ang demand", forecastEn: "May become more expensive next week", forecastFil: "Maaaring tumaas ang presyo sa susunod na linggo" },
+  { name: "Talong", image: `${STORY}/crop-talong.png`, price: "₱45–₱55 / kilo", statusEn: "In season now", statusFil: "Napapanahon ngayon", forecastEn: "Good supply is arriving", forecastFil: "Maraming paparating na ani" },
+  { name: "Pechay", image: `${STORY}/crop-pechay.png`, price: "₱20–₱30 / tali", statusEn: "Steady demand", statusFil: "Pantay ang demand", forecastEn: "Expected to remain affordable", forecastFil: "Inaasahang mananatiling abot-kaya" },
+  { name: "Mangga", image: `${CONTENT}/product-mango.jpg`, price: "₱80–₱100 / kilo", statusEn: "Harvest arriving soon", statusFil: "Malapit na ang anihan", forecastEn: "More harvests expected next week", forecastFil: "Mas maraming ani sa susunod na linggo" },
+] as const;
+
+const processIcons = [Sprout, CheckCircle2, Truck, UserRound];
+const trustIcons = [Store, Leaf, UserRound, LockKeyhole];
+
+function SectionHeading({ eyebrow, title, body }: { eyebrow: string; title: string; body: string }) {
   return (
-    <motion.section
-      id={id}
-      className={className}
-      initial={false}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.18 }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
-    >
-      {children}
-    </motion.section>
+    <div className="story-heading">
+      <span>{eyebrow}</span>
+      <h2>{title}</h2>
+      <p>{body}</p>
+    </div>
   );
 }
 
 export function AgrifarmLandingPage() {
+  const { locale, setLocale } = useLocale();
+  const t = content[locale];
   const [menuOpen, setMenuOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [cartItemCount, setCartItemCount] = useState(0);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
-  const { locale, copy, setLocale } = useLocale();
-  const t = copy.landing;
-  const prefersReducedMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll();
-  const heroY = useTransform(scrollYProgress, [0, 0.22], [0, prefersReducedMotion ? 0 : -46]);
-
-  const year = useMemo(() => new Date().getFullYear(), []);
-  const accountHref = getRoleHomeHref(authUser);
-  const accountRole = isSeller(authUser) ? t.account.seller : t.account.buyer;
-  const accountAction = isSeller(authUser) ? t.account.dashboard : t.account.marketplace;
+  const [selectedBarangay, setSelectedBarangay] = useState<(typeof barangays)[number]>(barangays[0]);
+  const [selectedFarmer, setSelectedFarmer] = useState<(typeof farmers)[number]>(farmers[0]);
+  const [openMeal, setOpenMeal] = useState<string | null>(null);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -86,495 +227,191 @@ export function AgrifarmLandingPage() {
     setAuthUser(token && user ? user : null);
   }, []);
 
-  function handleSearch(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    const target = document.getElementById("marketplace");
-    target?.scrollIntoView({ behavior: prefersReducedMotion ? "auto" : "smooth" });
-  }
-
-  function handleAddToCart() {
-    setCartItemCount(count => count + 1);
-  }
-
-  function handleLocaleChange(option: "ENG" | "FIL") {
-    setLocale(option === "ENG" ? "en" : "fil");
-  }
+  const accountHref = getRoleHomeHref(authUser);
+  const accountLabel = authUser ? (isSeller(authUser) ? t.account.seller : t.account.buyer) : null;
+  const navHrefs = ["#find-farmers", "#meet-farmers", "#meals", "#season", "#why"];
 
   return (
-    <div className="agrifarm-premium min-h-screen overflow-x-hidden">
-      <header className="premium-nav fixed inset-x-0 top-0 z-50">
-        <div className="premium-nav-frame" aria-hidden="true" />
-        <div className="premium-nav-content">
-          <Link href="#home" className="premium-logo" aria-label="AGRIFARM home">
-            <span className="premium-logo-plaque" aria-hidden="true" />
-            <span className="premium-logo-mark">
-              <Leaf size={25} strokeWidth={2.4} />
-            </span>
-            <span>
-              <span className="premium-logo-kicker">{t.logoKicker}</span>
-              <strong>AGRIFARM</strong>
-            </span>
+    <div className="story-landing">
+      <header className="story-nav">
+        <div className="story-shell story-nav-inner">
+          <Link href="#home" className="story-logo" aria-label="AgriFarm home">
+            <span className="story-logo-mark"><Leaf size={28} aria-hidden="true" /></span>
+            <span><strong>AGRI<span>FARM</span></strong><small>Mula sa Bukid, Para sa Pamilya</small></span>
           </Link>
 
-          <nav className="premium-nav-links" aria-label="Main navigation">
-            {t.nav.map((label, index) => (
-              <Link key={label} href={["#marketplace", "#farmers", "#categories", "#about", "#contact"][index]}>
-                {label}
-              </Link>
-            ))}
+          <nav className="story-nav-links" aria-label="Main navigation">
+            {t.nav.map((label, index) => <Link key={label} href={navHrefs[index]}>{label}</Link>)}
           </nav>
 
-          <div className="premium-nav-actions">
-            <div className="premium-language-toggle" aria-label="Language selector">
-              {(["ENG", "FIL"] as const).map(option => (
-                <button
-                  key={option}
-                  type="button"
-                  className={(locale === "en" && option === "ENG") || (locale === "fil" && option === "FIL") ? "is-active" : ""}
-                  aria-pressed={(locale === "en" && option === "ENG") || (locale === "fil" && option === "FIL")}
-                  onClick={() => handleLocaleChange(option)}
-                >
-                  {option}
-                </button>
-              ))}
+          <div className="story-nav-actions">
+            <span className="story-location"><MapPin size={19} />{t.location}</span>
+            <div className="story-language" aria-label="Language selector">
+              <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>English</button>
+              <button type="button" aria-pressed={locale === "fil"} onClick={() => setLocale("fil")}>Tagalog</button>
             </div>
-            {cartItemCount > 0 ? (
-              <Link href="#marketplace" className="premium-cart" aria-label={`${t.cartAria}, ${cartItemCount} items`}>
-                <ShoppingCart size={21} />
-                <span>{cartItemCount}</span>
-              </Link>
-            ) : null}
             {authUser ? (
-              <Link href={accountHref} className="premium-account-link">
-                <UserRound size={17} />
-                <span>
-                  <strong>{authUser.fullName}</strong>
-                  <small>{accountRole}</small>
-                </span>
+              <Link href={accountHref} className="story-login" aria-label={`${authUser.fullName}, ${accountLabel}`}>
+                <UserRound size={20} />
+                <span><strong>{authUser.fullName}</strong><small>{accountLabel}</small></span>
               </Link>
             ) : (
-              <Link href="/login" className="premium-login">
-                <UserRound size={17} />
-                {t.login}
-              </Link>
+              <Link href="/login" className="story-login"><UserRound size={20} />{t.login}</Link>
             )}
+            <button className="story-menu" type="button" aria-label={t.menu} aria-expanded={menuOpen} onClick={() => setMenuOpen(value => !value)}>
+              {menuOpen ? <X size={26} /> : <Menu size={26} />}
+            </button>
           </div>
-
-          <button
-            type="button"
-            className="premium-menu-button"
-            aria-label={menuOpen ? t.closeMenu : t.openMenu}
-            aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(open => !open)}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
         </div>
-
-        <nav className={`premium-mobile-menu ${menuOpen ? "is-open" : ""}`} aria-label="Mobile navigation">
-          {t.nav.map((label, index) => (
-            <Link key={label} href={["#marketplace", "#farmers", "#categories", "#about", "#contact"][index]} onClick={() => setMenuOpen(false)}>
-              {label}
-            </Link>
-          ))}
-          <div className="premium-mobile-language" aria-label="Language selector">
-            {(["ENG", "FIL"] as const).map(option => (
-              <button
-                key={option}
-                type="button"
-                className={(locale === "en" && option === "ENG") || (locale === "fil" && option === "FIL") ? "is-active" : ""}
-                aria-pressed={(locale === "en" && option === "ENG") || (locale === "fil" && option === "FIL")}
-                onClick={() => handleLocaleChange(option)}
-              >
-                {option}
-              </button>
-            ))}
+        <nav className={`story-mobile-menu ${menuOpen ? "is-open" : ""}`} aria-label="Mobile navigation">
+          {t.nav.map((label, index) => <Link key={label} href={navHrefs[index]} onClick={() => setMenuOpen(false)}>{label}</Link>)}
+          <span>{t.location}</span>
+          <div className="story-language">
+            <button type="button" aria-pressed={locale === "en"} onClick={() => setLocale("en")}>English</button>
+            <button type="button" aria-pressed={locale === "fil"} onClick={() => setLocale("fil")}>Tagalog</button>
           </div>
-          {cartItemCount > 0 ? (
-            <Link href="#marketplace" onClick={() => setMenuOpen(false)}>
-              {t.cart} ({cartItemCount})
-            </Link>
-          ) : null}
-          {authUser ? (
-            <Link href={accountHref} onClick={() => setMenuOpen(false)}>
-              {authUser.fullName} - {accountRole}
-            </Link>
-          ) : (
-            <Link href="/login" onClick={() => setMenuOpen(false)}>
-              {t.login}
-            </Link>
-          )}
         </nav>
       </header>
 
       <main>
-        <section id="home" className="premium-hero" data-locale={locale}>
-          <div className="premium-container premium-hero-grid">
-            <motion.div
-              className="premium-hero-copy"
-              initial={false}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, ease: "easeOut" }}
-            >
-              <span className="premium-eyebrow">{t.heroEyebrow}</span>
+        <section id="home" className="story-hero">
+          <div className="story-shell story-hero-grid">
+            <div className="story-hero-copy">
+              <span className="story-kicker"><Sprout size={22} />{t.hero.eyebrow}</span>
+              <h1>{t.hero.title}</h1>
+              <p>{t.hero.body}</p>
               {authUser ? (
-                <div className="premium-session-panel">
-                  <span>{t.account.welcome}, {authUser.fullName}</span>
-                  <strong>{accountRole}</strong>
-                  <Link href={accountHref}>
-                    {accountAction}
-                    <ArrowRight size={16} />
-                  </Link>
+                <div className="story-session">
+                  <span>{authUser.fullName}</span><strong>{accountLabel}</strong>
+                  <Link href={accountHref}>{t.account.continue}<ArrowRight size={18} /></Link>
                 </div>
               ) : null}
-              <h1>
-                <span>{t.heroTitle[0]} {t.heroTitle[1]}</span>
-                <span>{t.heroTitle[2]}</span>
-                <span className="premium-title-green">{t.heroTitle[3]} {t.heroTitle[4]}</span>
-              </h1>
-              <p>{t.heroBody}</p>
-
-              <div className="premium-hero-highlights" aria-label="Agrifarm highlights">
-                {t.heroHighlights.map((item, index) => {
-                  const Icon = heroHighlightIcons[index];
-                  return (
-                    <div key={item.title} className="premium-hero-highlight">
-                      <span className="premium-hero-highlight-icon" aria-hidden="true">
-                        <Icon size={28} />
-                      </span>
-                      <span>
-                        <strong>{item.title}</strong>
-                        <small>{item.description}</small>
-                      </span>
-                    </div>
-                  );
-                })}
+              <div className="story-hero-actions">
+                <Link href="#find-farmers" className="story-button story-button-primary"><ShoppingCart size={24} />{t.hero.buy}<ArrowRight size={22} /></Link>
+                <Link href="/register" className="story-button story-button-secondary"><Store size={24} />{t.hero.sell}</Link>
               </div>
+              <div className="story-trust-line"><ShieldCheck size={26} /><span>{t.hero.trust}</span><i aria-hidden="true" /><LockKeyhole size={24} /><span>{t.hero.safety}</span></div>
+            </div>
+            <div className="story-hero-photo">
+              <Image src={`${CONTENT}/hero-farmer-wide.png`} alt="Smiling Filipino farmer holding a basket of fresh vegetables" fill priority sizes="(max-width: 900px) 100vw, 52vw" />
+            </div>
+          </div>
+        </section>
 
-              <form className="premium-search" onSubmit={handleSearch}>
-                <div className="premium-search-frame" aria-hidden="true" />
-                <label className="sr-only" htmlFor="hero-search">{t.searchLabel}</label>
-                <Search className="premium-search-icon" size={22} aria-hidden="true" />
-                <input
-                  id="hero-search"
-                  value={query}
-                  onChange={event => setQuery(event.target.value)}
-                  placeholder={t.searchPlaceholder}
-                />
-                <button type="submit">{t.searchButton}</button>
-              </form>
+        <section id="find-farmers" className="story-section story-map-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.map.eyebrow} title={t.map.title} body={t.map.body} />
+            <div className="story-map-wrap">
+              <Image src={`${STORY}/barangay-map.png`} alt="Illustrated map of nearby Pasig barangays" fill sizes="(max-width: 900px) 96vw, 1200px" />
+              {barangays.map(barangay => (
+                <button key={barangay.name} type="button" className={`story-map-pin level-${barangay.level} ${selectedBarangay.name === barangay.name ? "is-selected" : ""}`} style={{ left: barangay.left, top: barangay.top }} onClick={() => setSelectedBarangay(barangay)} aria-label={`${barangay.name}, ${barangay.count} ${t.map.selected}`}>
+                  <strong>{barangay.count}</strong><span>{barangay.name}</span>
+                </button>
+              ))}
+            </div>
+            <div className="story-map-footer">
+              <div className="story-map-selected" aria-live="polite"><MapPin size={22} /><strong>{selectedBarangay.name}</strong><span>{selectedBarangay.count} {t.map.selected}</span></div>
+              <ul className="story-legend">
+                {t.map.legend.map((label, index) => <li key={label}><i className={`level-${["many", "some", "few"][index]}`} />{label}</li>)}
+              </ul>
+            </div>
+          </div>
+        </section>
 
-              <div className="premium-hero-buttons">
-                <Link href="#marketplace" className="premium-asset-button primary">
-                  <ShoppingCart size={19} aria-hidden="true" />
-                  {t.browseMarketplace}
-                  <ArrowRight size={18} />
-                </Link>
-                <Link href="/register" className="premium-asset-button secondary">
-                  <Store size={19} aria-hidden="true" />
-                  {t.becomeSeller}
-                </Link>
-              </div>
-
-            </motion.div>
-
-            <motion.div
-              className="premium-hero-visual"
-              style={{ y: heroY }}
-              initial={false}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: "easeOut", delay: 0.08 }}
-            >
-              <div className="premium-hero-frame" style={{ position: "relative" }}>
-                <div className="premium-hero-card">
-                  <span className="premium-hero-card-icon" aria-hidden="true">
-                    <Leaf size={28} />
-                  </span>
-                  <span>{t.heroCardLabel}</span>
-                  <strong>{t.heroCardValue}</strong>
-                  <small>{t.heroCardSub}</small>
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="premium-trust-row">
-              {t.trustFeatures.map((feature, index) => {
-                const Icon = trustIcons[index];
-                return (
-                  <div key={feature} className="premium-trust-item">
-                    <span className="premium-trust-icon">
-                      <Icon size={28} />
-                    </span>
-                    <span className="premium-trust-copy">
-                      <strong>{feature}</strong>
-                      <small>{t.trustDescriptions[index]}</small>
-                    </span>
+        <section id="meet-farmers" className="story-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.farmers.eyebrow} title={t.farmers.title} body={t.farmers.body} />
+            <div className="story-farmer-grid">
+              {farmers.map(farmer => (
+                <article key={farmer.name} className={`story-farmer-card ${selectedFarmer.name === farmer.name ? "is-selected" : ""}`}>
+                  <div className="story-farmer-photo"><Image src={farmer.image} alt={`${farmer.name}, local farmer from ${farmer.location}`} fill sizes="(max-width: 650px) 92vw, (max-width: 1000px) 45vw, 23vw" style={{ objectPosition: farmer.position }} /></div>
+                  <div className="story-farmer-body">
+                    <h3>{farmer.name}</h3>
+                    <div className="story-rating"><Star size={20} fill="currentColor" />{farmer.rating} <span>({farmer.reviews})</span></div>
+                    <p><MapPin size={19} />{farmer.location}</p>
+                    <button type="button" className="story-card-button" onClick={() => setSelectedFarmer(farmer)}>{t.farmers.view}<ArrowRight size={20} /></button>
                   </div>
+                </article>
+              ))}
+            </div>
+            <p className="story-selection" aria-live="polite"><CheckCircle2 size={21} />{t.farmers.selected}: <strong>{selectedFarmer.name}</strong>, {selectedFarmer.location}</p>
+          </div>
+        </section>
+
+        <section id="meals" className="story-section story-meals-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.meals.eyebrow} title={t.meals.title} body={t.meals.body} />
+            <div className="story-meal-grid">
+              {meals.map(meal => {
+                const expanded = openMeal === meal.name;
+                return (
+                  <article key={meal.name} className="story-meal-card">
+                    <div className="story-meal-photo"><Image src={meal.image} alt={`${meal.name}, an affordable Filipino family meal`} fill sizes="(max-width: 700px) 92vw, 31vw" /></div>
+                    <div className="story-meal-body">
+                      <h3>{meal.name}</h3>
+                      <span className="story-price-label">{t.meals.estimated}</span>
+                      <strong className="story-meal-price">{meal.cost}</strong>
+                      <div className="story-meal-meta"><span>{t.meals.serves} {meal.serves}</span><span>{meal.available} {t.meals.available}</span></div>
+                      <small>{t.meals.current}</small>
+                      <button type="button" className="story-card-button" aria-expanded={expanded} onClick={() => setOpenMeal(expanded ? null : meal.name)}>{expanded ? t.meals.hide : t.meals.view}<ArrowRight size={20} /></button>
+                      {expanded ? <ul className="story-ingredients">{meal.ingredients.map(item => <li key={item}><CheckCircle2 size={17} />{item}</li>)}</ul> : null}
+                    </div>
+                  </article>
                 );
               })}
             </div>
           </div>
         </section>
 
-        <MotionSection id="marketplace" className="premium-section premium-products">
-          <div className="premium-container">
-            <SectionHeading
-              eyebrow={t.sections.marketplace.eyebrow}
-              title={t.sections.marketplace.title}
-              description={t.sections.marketplace.description}
-            />
-
-            <div className="premium-product-grid">
-              {products.map((product, index) => (
-                <motion.article
-                  key={product.name}
-                  className="premium-product-card"
-                  whileHover={prefersReducedMotion ? undefined : { y: -10 }}
-                  transition={{ duration: 0.3, ease: "easeOut" }}
-                >
-                  <span className="premium-product-frame" aria-hidden="true" />
-                  <div className="premium-product-image" style={{ position: "absolute" }}>
-                    <Image
-                      src={product.image}
-                      alt={product.name}
-                      fill
-                      sizes="(max-width: 768px) 86vw, (max-width: 1280px) 42vw, 22vw"
-                    />
+        <section id="season" className="story-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.trends.eyebrow} title={t.trends.title} body={t.trends.body} />
+            <div className="story-crop-grid">
+              {crops.map(crop => (
+                <article key={crop.name} className="story-crop-card">
+                  <div className="story-crop-image"><Image src={crop.image} alt={crop.name} fill sizes="(max-width: 650px) 44vw, 22vw" /></div>
+                  <div className="story-crop-body">
+                    <span><Sprout size={18} />{t.trends.season}</span>
+                    <h3>{crop.name}</h3>
+                    <strong>{crop.price}</strong>
+                    <p>{locale === "en" ? crop.statusEn : crop.statusFil}</p>
+                    <small>{locale === "en" ? crop.forecastEn : crop.forecastFil}</small>
                   </div>
-                  <div className="premium-product-body">
-                    <div>
-                      <span className="premium-product-subtitle">{t.products[index]?.subtitle ?? product.subtitle}</span>
-                      <h3>{product.name}</h3>
-                    </div>
-                    <div className="premium-product-meta">
-                      <span>
-                        <MapPin size={14} />
-                        {product.location}
-                      </span>
-                      <span>
-                        <Star size={14} fill="currentColor" />
-                        {product.rating}
-                      </span>
-                    </div>
-                    <p>{product.seller}</p>
-                    <div className="premium-product-footer">
-                      <strong>{product.price}</strong>
-                      <button type="button" onClick={handleAddToCart} aria-label={`${t.addToCartAria}: ${product.name}`}>
-                        <ShoppingCart size={16} />
-                        {t.products[index]?.add ?? "Add"}
-                      </button>
-                    </div>
-                  </div>
-                </motion.article>
+                </article>
               ))}
             </div>
           </div>
-        </MotionSection>
+        </section>
 
-        <MotionSection id="categories" className="premium-section premium-categories">
-          <div className="premium-container">
-            <SectionHeading
-              eyebrow={t.sections.categories.eyebrow}
-              title={t.sections.categories.title}
-              description={t.sections.categories.description}
-            />
-
-            <div className="premium-category-grid">
-              {categories.map((category, index) => (
-                <motion.a
-                  key={category.name}
-                  href="#marketplace"
-                  className="premium-category-card"
-                  whileHover={prefersReducedMotion ? undefined : { scale: 1.03, y: -4 }}
-                  transition={{ duration: 0.28 }}
-                >
-                  <span className="premium-category-frame" aria-hidden="true" />
-                  <span className="premium-category-image" style={{ position: "absolute" }}>
-                    <Image src={category.image} alt="" fill sizes="(max-width: 768px) 82vw, 30vw" />
-                  </span>
-                  <span className="premium-category-copy">
-                    <strong>{t.categories[index]?.name ?? category.name}</strong>
-                    <span>{t.categories[index]?.description ?? category.description}</span>
-                  </span>
-                </motion.a>
-              ))}
-            </div>
+        <section className="story-section story-journey-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.journey.eyebrow} title={t.journey.title} body={t.journey.body} />
+            <ol className="story-process">
+              {t.journey.steps.map((step, index) => {
+                const Icon = processIcons[index];
+                return <li key={step[0]}><span className="story-process-number">{index + 1}</span><div className="story-process-icon"><Icon size={54} /></div><strong>{step[0]}</strong><p>{step[1]}</p></li>;
+              })}
+            </ol>
           </div>
-        </MotionSection>
+        </section>
 
-        <MotionSection id="about" className="premium-section premium-why">
-          <div className="premium-container premium-why-grid">
-            <div>
-              <SectionHeading
-                eyebrow={t.sections.about.eyebrow}
-                title={t.sections.about.title}
-                description={t.sections.about.description}
-                align="left"
-              />
-              <div className="premium-feature-list">
-                {t.trustFeatures.map((feature, index) => {
-                  const Icon = trustIcons[index];
-                  return (
-                    <div key={feature} className="premium-feature-row">
-                      <Icon size={22} />
-                      <span>{feature}</span>
-                      <CheckCircle2 size={18} />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="premium-stat-grid premium-stat-stack">
-              {stats.map((stat, index) => (
-                <motion.article
-                  key={stat.label}
-                  className="premium-stat-card"
-                  whileHover={prefersReducedMotion ? undefined : { y: -6 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  <span className="premium-stat-frame" aria-hidden="true" />
-                  <strong>{stat.value}</strong>
-                  <span>{t.stats[index] ?? stat.label}</span>
-                </motion.article>
-              ))}
-            </div>
-          </div>
-        </MotionSection>
-
-        <MotionSection id="farmers" className="premium-section premium-farmer">
-          <div className="premium-container">
-            <div className="premium-farmer-card">
-              <span className="premium-farmer-frame" aria-hidden="true" />
-              <div className="premium-farmer-image" style={{ position: "relative" }}>
-                <Image
-                  src={`${CONTENT}/farmer-collective.jpg`}
-                  alt="Group of Filipino farmers with a fresh vegetable harvest"
-                  fill
-                  loading="eager"
-                  sizes="(max-width: 1024px) 88vw, 48vw"
-                />
-              </div>
-              <div className="premium-farmer-copy">
-                <span className="premium-eyebrow">{t.farmer.eyebrow}</span>
-                <h2>{t.farmer.title}</h2>
-                <p>{t.farmer.body}</p>
-                <dl>
-                  <div>
-                    <dt>{t.farmer.locationLabel}</dt>
-                    <dd>{t.farmer.location}</dd>
-                  </div>
-                  <div>
-                    <dt>{t.farmer.productsLabel}</dt>
-                    <dd>{t.farmer.products}</dd>
-                  </div>
-                </dl>
-                <Link href="/register" className="premium-asset-button primary compact">
-                  {t.farmer.cta}
-                  <ArrowRight size={17} />
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MotionSection>
-
-        <MotionSection className="premium-section premium-benefits">
-          <div className="premium-container">
-            <SectionHeading
-              eyebrow={t.sections.benefits.eyebrow}
-              title={t.sections.benefits.title}
-              description={t.sections.benefits.description}
-            />
-            <div className="premium-benefit-grid">
-              {marketplaceBenefits.map((benefit, index) => {
-                const Icon = benefitIcons[index];
-                return (
-                  <article key={benefit} className="premium-benefit-card">
-                    <Icon size={25} />
-                    <h3>{t.benefits[index] ?? benefit}</h3>
-                    <p>{t.benefitBody}</p>
-                  </article>
-                );
+        <section id="why" className="story-section story-why-section">
+          <div className="story-shell">
+            <SectionHeading eyebrow={t.why.eyebrow} title={t.why.title} body={t.why.body} />
+            <div className="story-why-grid">
+              {t.why.items.map((item, index) => {
+                const Icon = trustIcons[index];
+                return <article key={item[0]}><span><Icon size={34} /></span><h3>{item[0]}</h3><p>{item[1]}</p></article>;
               })}
             </div>
+            <Link href="#find-farmers" className="story-button story-button-primary story-final-cta"><ShoppingCart size={24} />{t.why.cta}<ArrowRight size={22} /></Link>
           </div>
-        </MotionSection>
-
-        <MotionSection className="premium-section premium-cta">
-          <div className="premium-container">
-            <div className="premium-cta-panel">
-              <div>
-                <span className="premium-eyebrow">{t.cta.eyebrow}</span>
-                <h2>{t.cta.title}</h2>
-                <p>{t.cta.body}</p>
-              </div>
-              <div className="premium-cta-actions">
-                <Link href="#marketplace" className="premium-asset-button primary">
-                  {t.cta.shop}
-                  <ArrowRight size={18} />
-                </Link>
-                <Link href="/register" className="premium-asset-button success">
-                  {t.cta.seller}
-                </Link>
-              </div>
-            </div>
-          </div>
-        </MotionSection>
+        </section>
       </main>
 
-      <footer id="contact" className="premium-footer">
-        <div className="premium-footer-frame" aria-hidden="true" />
-        <div className="premium-container premium-footer-grid">
-          <div className="premium-footer-brand">
-            <strong>AGRIFARM</strong>
-            <p>{t.footer.brand}</p>
-          </div>
-          <div>
-            <h3>{t.footer.marketplace}</h3>
-            <Link href="#marketplace">{t.footer.featured}</Link>
-            <Link href="#categories">{t.footer.categories}</Link>
-            <Link href="#farmers">{t.footer.farmers}</Link>
-          </div>
-          <div>
-            <h3>{t.footer.contact}</h3>
-            <span><Phone size={16} /> +63 912 365 5768</span>
-            <span><Mail size={16} /> hello@agrifarm.ph</span>
-            <span><MapPin size={16} /> Philippines</span>
-          </div>
-          <div>
-            <h3>{t.footer.newsletter}</h3>
-            <p>{t.footer.newsletterBody}</p>
-            <form className="premium-newsletter" onSubmit={event => event.preventDefault()}>
-              <label className="sr-only" htmlFor="newsletter-email">{t.footer.emailLabel}</label>
-              <input id="newsletter-email" type="email" placeholder={t.footer.emailPlaceholder} />
-              <button type="submit" aria-label={t.footer.subscribe}>
-                <ArrowRight size={18} />
-              </button>
-            </form>
-          </div>
-        </div>
-        <p className="premium-copyright">&copy; {year} AGRIFARM. {t.footer.copyright}</p>
+      <footer className="story-footer">
+        <div className="story-shell"><strong>AGRIFARM</strong><span>Mula sa Bukid, Para sa Pamilya</span><p>© {new Date().getFullYear()} AgriFarm</p></div>
       </footer>
-    </div>
-  );
-}
-
-function SectionHeading({
-  eyebrow,
-  title,
-  description,
-  align = "center",
-}: {
-  eyebrow: string;
-  title: string;
-  description: string;
-  align?: "center" | "left";
-}) {
-  return (
-    <div className={`premium-section-heading premium-heading-compact ${align === "left" ? "is-left" : ""}`}>
-      <span className="premium-eyebrow">{eyebrow}</span>
-      <h2>{title}</h2>
-      <p>{description}</p>
     </div>
   );
 }
