@@ -1,5 +1,5 @@
-import { ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
-import { AuditAction, StoreStatus, User } from "@prisma/client";
+import { ConflictException, ForbiddenException, Injectable, NotFoundException } from "@nestjs/common";
+import { AuditAction, Prisma, StoreStatus, User } from "@prisma/client";
 import { AuditService } from "../../audit/audit.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { SellersService } from "../sellers/sellers.service";
@@ -24,7 +24,7 @@ export class StoresService {
     return this.prisma.store.findMany({
       where: { status: StoreStatus.ACTIVE, deletedAt: null },
       include: {
-        sellerProfile: { select: { businessName: true, verifiedAt: true } },
+        sellerProfile: { select: { businessName: true, verifiedAt: true, gender: true, avatarKey: true } },
         serviceAreas: { where: { isActive: true }, include: { barangay: true } },
         _count: { select: { products: true } }
       },
@@ -36,7 +36,7 @@ export class StoresService {
     const store = await this.prisma.store.findUnique({
       where: { slug },
       include: {
-        sellerProfile: { select: { businessName: true, verifiedAt: true } },
+        sellerProfile: { select: { businessName: true, verifiedAt: true, gender: true, avatarKey: true } },
         serviceAreas: { where: { isActive: true }, include: { barangay: true } },
         products: {
           where: { status: "ACTIVE", deletedAt: null },
@@ -54,27 +54,38 @@ export class StoresService {
   async create(user: User, input: { name: string; slug?: string; description?: string; status?: StoreStatus }) {
     const profile = await this.sellersService.requireSellerProfile(user);
     const baseSlug = input.slug ? slugify(input.slug) : slugify(input.name);
+    const existing = await this.prisma.store.findUnique({ where: { slug: baseSlug }, select: { id: true } });
+    if (existing) {
+      throw new ConflictException("That store URL is already in use. Choose a different store name or slug.");
+    }
 
-    return this.prisma.$transaction(async (tx) => {
-      const store = await tx.store.create({
-        data: {
-          sellerProfileId: profile.id,
-          name: input.name,
-          slug: baseSlug,
-          description: input.description,
-          status: input.status ?? StoreStatus.ACTIVE
-        }
+    try {
+      return await this.prisma.$transaction(async (tx) => {
+        const store = await tx.store.create({
+          data: {
+            sellerProfileId: profile.id,
+            name: input.name,
+            slug: baseSlug,
+            description: input.description,
+            status: input.status ?? StoreStatus.ACTIVE
+          }
+        });
+        await this.audit.write({
+          actorId: user.id,
+          action: AuditAction.CREATE,
+          entityType: "Store",
+          entityId: store.id,
+          metadata: { slug: store.slug, status: store.status },
+          client: tx
+        });
+        return store;
       });
-      await this.audit.write({
-        actorId: user.id,
-        action: AuditAction.CREATE,
-        entityType: "Store",
-        entityId: store.id,
-        metadata: { slug: store.slug, status: store.status },
-        client: tx
-      });
-      return store;
-    });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        throw new ConflictException("That store URL is already in use. Choose a different store name or slug.");
+      }
+      throw error;
+    }
   }
 
   async mine(user: User) {

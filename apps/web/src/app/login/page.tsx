@@ -26,7 +26,6 @@ export default function LoginPage() {
     const token = getAuthToken();
     const user = getAuthUser();
     if (!token || !user) {
-      notify("info", "demoHint");
       return;
     }
 
@@ -107,6 +106,15 @@ export default function LoginPage() {
             placeholder="Password"
           />
         </label>
+        <div className="auth-form-row">
+          <label className="auth-checkbox">
+            <input type="checkbox" />
+            <span>Remember me</span>
+          </label>
+          <Link href="/login" className="auth-inline-link">
+            Forgot password?
+          </Link>
+        </div>
         <button
           type="submit"
           disabled={loading}

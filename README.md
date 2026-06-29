@@ -57,6 +57,14 @@ The Docker quick-start uses the database credentials from `apps\api\.env.example
 docker compose -f infra/docker/docker-compose.yml up -d
 ```
 
+Wait until both containers report `healthy` before running migrations:
+
+```bash
+docker compose -f infra/docker/docker-compose.yml ps
+```
+
+This Compose setup runs the local PostgreSQL and Redis dependencies. The web and API apps run through Node.js with `npm run dev`.
+
 4. Set up Prisma.
 
 ```bash

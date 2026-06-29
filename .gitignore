@@ -7,3 +7,9 @@ node_modules/
 dist/
 coverage/
 *.log
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
+!apps/api/uploads/catalog/
+!apps/api/uploads/catalog/*
+!apps/api/uploads/catalog/crops/
+!apps/api/uploads/catalog/crops/*

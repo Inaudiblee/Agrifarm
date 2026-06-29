@@ -1,5 +1,6 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
-import { IsOptional, IsString } from "class-validator";
+import { FarmerGender } from "@prisma/client";
+import { IsEnum, IsOptional, IsString, Matches } from "class-validator";
 import { AuthenticatedRequest, AuthGuard } from "../auth/auth.guard";
 import { Roles } from "../../security/roles.decorator";
 import { RolesGuard } from "../../security/roles.guard";
@@ -10,12 +11,13 @@ class SellerProfileDto {
   businessName!: string;
 
   @IsOptional()
-  @IsString()
-  businessPermitNo?: string;
+  @IsEnum(FarmerGender)
+  gender?: FarmerGender;
 
   @IsOptional()
   @IsString()
-  taxId?: string;
+  @Matches(/^(male|female)-0[1-5]$/)
+  avatarKey?: string;
 }
 
 @UseGuards(AuthGuard)
@@ -31,6 +33,8 @@ export class SellersController {
   }
 
   @Post("profile")
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles("SELLER")
   profile(@Req() request: AuthenticatedRequest, @Body() body: SellerProfileDto) {
     return this.sellersService.upsertProfile(request.user!, body);
   }

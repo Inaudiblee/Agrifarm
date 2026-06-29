@@ -1,8 +1,13 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { AuditAction, ProductStatus, User } from "@prisma/client";
+import { mkdir, writeFile } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import { join } from "node:path";
 import { AuditService } from "../../audit/audit.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { StoresService } from "../stores/stores.service";
+import { apiStorageRoot } from "../../storage-paths";
+import { cropImageUrl, findCropMatch } from "./crop-catalog";
 
 const normalizeBarangay = (name: string) => name.trim().toLowerCase().replace(/\s+/g, " ");
 const slugify = (value: string) =>
@@ -14,6 +19,8 @@ const slugify = (value: string) =>
 
 @Injectable()
 export class ProductsService {
+  private readonly imageLookupAttempts = new Map<string, number>();
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly storesService: StoresService,
@@ -21,7 +28,7 @@ export class ProductsService {
   ) {}
 
   async list(input: { barangay?: string; q?: string }) {
-    return this.prisma.product.findMany({
+    const query = () => this.prisma.product.findMany({
       where: {
         status: ProductStatus.ACTIVE,
         deletedAt: null,
@@ -53,6 +60,25 @@ export class ProductsService {
       },
       orderBy: { createdAt: "desc" }
     });
+
+    let products = await query();
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    const missingImages = products.filter((product) => {
+      const lastAttempt = this.imageLookupAttempts.get(product.id) ?? 0;
+      const firstImage = product.images[0];
+      const usesCatalogBundle = Boolean(firstImage?.url?.startsWith("/uploads/catalog/") && !firstImage.url.includes("/crops/"));
+      return (product.images.length === 0 || usesCatalogBundle) && (Boolean(findCropMatch(product.name)) || lastAttempt < oneHourAgo);
+    });
+
+    if (missingImages.length) {
+      await Promise.all(missingImages.map(async (product) => {
+        this.imageLookupAttempts.set(product.id, Date.now());
+        await this.addDefaultProductImage(product.id, product.name);
+      }));
+      products = await query();
+    }
+
+    return products;
   }
 
   async listMine(user: User) {
@@ -84,6 +110,7 @@ export class ProductsService {
       unit?: string;
       price: string;
       stockOnHand: number;
+      imageWillBeUploaded?: boolean;
     }
   ) {
     await this.storesService.requireOwnedStore(user, input.storeId);
@@ -92,7 +119,7 @@ export class ProductsService {
       throw new BadRequestException("Price must be a positive decimal value.");
     }
 
-    return this.prisma.$transaction(async (tx) => {
+    const created = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
           storeId: input.storeId,
@@ -133,8 +160,16 @@ export class ProductsService {
 
       return tx.product.findUniqueOrThrow({
         where: { id: product.id },
-        include: { variants: true }
+        include: { variants: true, images: true }
       });
+    });
+
+    if (!input.imageWillBeUploaded) {
+      await this.addDefaultProductImage(created.id, created.name);
+    }
+    return this.prisma.product.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { variants: true, images: { orderBy: { displayOrder: "asc" } } }
     });
   }
 
@@ -218,6 +253,43 @@ export class ProductsService {
       entityType: "ProductImage",
       entityId: image.id,
       metadata: { productId: product.id }
+    });
+    return image;
+  }
+
+  async uploadImage(
+    user: User,
+    productId: string,
+    file: { buffer: Buffer; mimetype: string; size: number; originalname: string }
+  ) {
+    const product = await this.requireOwnedProduct(user, productId);
+    const extensions: Record<string, string> = { "image/jpeg": ".jpg", "image/png": ".png", "image/webp": ".webp" };
+    const extension = extensions[file.mimetype];
+    if (!extension || file.size > 5 * 1024 * 1024) {
+      throw new BadRequestException("Use a JPG, PNG, or WebP image up to 5 MB.");
+    }
+
+    const directory = join(apiStorageRoot(), "products");
+    await mkdir(directory, { recursive: true });
+    const filename = `${product.id}-${randomUUID()}${extension}`;
+    await writeFile(join(directory, filename), file.buffer);
+
+    await this.prisma.productImage.updateMany({ where: { productId: product.id }, data: { isPrimary: false } });
+    const image = await this.prisma.productImage.create({
+      data: {
+        productId: product.id,
+        url: `/uploads/products/${filename}`,
+        altText: `${product.name} uploaded by the seller`,
+        displayOrder: -1,
+        isPrimary: true
+      }
+    });
+    await this.audit.write({
+      actorId: user.id,
+      action: AuditAction.CREATE,
+      entityType: "ProductImage",
+      entityId: image.id,
+      metadata: { productId: product.id, source: "seller-upload" }
     });
     return image;
   }
@@ -327,6 +399,74 @@ export class ProductsService {
       throw new BadRequestException("Price must be a positive decimal value.");
     }
     return price;
+  }
+
+  private async addDefaultProductImage(productId: string, productName: string) {
+    const existing = await this.prisma.productImage.findFirst({ where: { productId }, orderBy: { displayOrder: "asc" } });
+    const crop = findCropMatch(productName);
+    if (crop) {
+      const url = cropImageUrl(crop);
+      if (existing) {
+        if (existing.url.startsWith("/uploads/catalog/") && existing.url !== url) {
+          await this.prisma.productImage.update({
+            where: { id: existing.id },
+            data: { url, altText: `${crop.name} harvest`, isPrimary: true }
+          });
+        }
+        return;
+      }
+      await this.prisma.productImage.create({
+        data: { productId, url, altText: `${crop.name} harvest`, isPrimary: true }
+      });
+      return;
+    }
+    if (existing) return;
+    if (await this.addInternetImageFallback(productId, productName)) return;
+    await this.prisma.productImage.create({
+      data: { productId, url: "/uploads/catalog/mixed-harvest.webp", altText: `${productName} farm harvest`, isPrimary: true }
+    });
+  }
+
+  private async addInternetImageFallback(productId: string, productName: string) {
+    try {
+      const params = new URLSearchParams({
+        action: "query",
+        format: "json",
+        origin: "*",
+        generator: "search",
+        gsrsearch: `${productName} vegetable fruit farm produce`,
+        gsrnamespace: "6",
+        gsrlimit: "8",
+        prop: "imageinfo",
+        iiprop: "url|mime",
+        iiurlwidth: "900"
+      });
+      const response = await fetch(`https://commons.wikimedia.org/w/api.php?${params}`, {
+        headers: { "User-Agent": "Agrifarm/1.0 product-image-fallback" },
+        signal: AbortSignal.timeout(5000)
+      });
+      if (!response.ok) return false;
+      const payload = await response.json() as {
+        query?: { pages?: Record<string, { imageinfo?: Array<{ thumburl?: string; url?: string; mime?: string }> }> }
+      };
+      const candidates = Object.values(payload.query?.pages ?? {})
+        .flatMap((page) => page.imageinfo ?? [])
+        .filter((info) => info.mime?.startsWith("image/") && (info.thumburl || info.url));
+      const selected = candidates[0];
+      if (!selected) return false;
+      await this.prisma.productImage.create({
+        data: {
+          productId,
+          url: selected.thumburl ?? selected.url!,
+          altText: `${productName} reference image from Wikimedia Commons`,
+          isPrimary: true
+        }
+      });
+      return true;
+    } catch (error) {
+      console.warn(`Product image lookup skipped for ${productId}:`, error instanceof Error ? error.message : error);
+      return false;
+    }
   }
 
   private async requireOwnedProduct(user: User, productId: string) {

@@ -1,6 +1,7 @@
-import { Injectable } from "@nestjs/common";
+import { BadRequestException, Injectable } from "@nestjs/common";
 import { AuditAction, StoreStatus, User, UserStatus } from "@prisma/client";
 import { AuditService } from "../../audit/audit.service";
+import { editableTranslationKeys, isSupportedLocale } from "../../i18n/translation-registry";
 import { PrismaService } from "../../prisma/prisma.service";
 
 @Injectable()
@@ -26,7 +27,11 @@ export class AdminService {
 
   orders() {
     return this.prisma.order.findMany({
-      include: { buyer: true, sellerOrders: { include: { store: true } }, payments: true },
+      include: {
+        buyer: { select: { id: true, email: true, fullName: true } },
+        sellerOrders: { include: { store: true } },
+        payments: true
+      },
       orderBy: { createdAt: "desc" }
     });
   }
@@ -61,5 +66,31 @@ export class AdminService {
       metadata: { status }
     });
     return store;
+  }
+
+  async updateTranslation(admin: User, key: string, locale: string, value: string) {
+    if (!editableTranslationKeys.has(key)) {
+      throw new BadRequestException("This translation key is not registered by a developer.");
+    }
+
+    if (!isSupportedLocale(locale)) {
+      throw new BadRequestException("Unsupported locale.");
+    }
+
+    const translation = await this.prisma.translationOverride.upsert({
+      where: { key_locale: { key, locale } },
+      create: { key, locale, value: value.trim(), updatedById: admin.id },
+      update: { value: value.trim(), updatedById: admin.id }
+    });
+
+    await this.audit.write({
+      actorId: admin.id,
+      action: AuditAction.UPDATE,
+      entityType: "TranslationOverride",
+      entityId: translation.id,
+      metadata: { key, locale }
+    });
+
+    return translation;
   }
 }

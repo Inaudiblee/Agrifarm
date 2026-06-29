@@ -1,4 +1,5 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UseGuards } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, Param, Patch, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import { IsBoolean, IsInt, IsOptional, IsString, Min } from "class-validator";
 import { AuthenticatedRequest, AuthGuard } from "../auth/auth.guard";
 import { Roles } from "../../security/roles.decorator";
@@ -38,6 +39,10 @@ class CreateProductDto {
   @IsInt()
   @Min(0)
   stockOnHand!: number;
+
+  @IsOptional()
+  @IsBoolean()
+  imageWillBeUploaded?: boolean;
 }
 
 class UpdateProductDto {
@@ -169,6 +174,25 @@ export class ProductsController {
   @Post(":id/images")
   addImage(@Req() request: AuthenticatedRequest, @Param("id") id: string, @Body() body: ProductImageDto) {
     return this.productsService.addImage(request.user!, id, body);
+  }
+
+  @UseGuards(AuthGuard, RolesGuard)
+  @Roles("SELLER")
+  @Post(":id/images/upload")
+  @UseInterceptors(FileInterceptor("image", {
+    limits: { fileSize: 5 * 1024 * 1024, files: 1 },
+    fileFilter: (_request, file, callback) => {
+      const allowed = ["image/jpeg", "image/png", "image/webp"];
+      callback(allowed.includes(file.mimetype) ? null : new BadRequestException("Use a JPG, PNG, or WebP image."), allowed.includes(file.mimetype));
+    }
+  }))
+  uploadImage(
+    @Req() request: AuthenticatedRequest,
+    @Param("id") id: string,
+    @UploadedFile() file?: { buffer: Buffer; mimetype: string; size: number; originalname: string }
+  ) {
+    if (!file) throw new BadRequestException("Choose a product image to upload.");
+    return this.productsService.uploadImage(request.user!, id, file);
   }
 
   @UseGuards(AuthGuard, RolesGuard)

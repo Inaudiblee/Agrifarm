@@ -1,10 +1,13 @@
 import { ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
 import { AppModule } from "./app.module";
+import { apiStorageRoot } from "./storage-paths";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.setGlobalPrefix("api");
+  app.useStaticAssets(apiStorageRoot(), { prefix: "/uploads/" });
   app.enableCors({
     origin: process.env.WEB_ORIGIN ?? "http://localhost:3000",
     credentials: true

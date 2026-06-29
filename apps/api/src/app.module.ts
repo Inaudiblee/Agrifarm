@@ -12,6 +12,7 @@ import { DocsModule } from "./modules/docs/docs.module";
 import { HealthModule } from "./modules/health/health.module";
 import { CategoriesModule } from "./modules/categories/categories.module";
 import { AdminModule } from "./modules/admin/admin.module";
+import { TranslationsModule } from "./modules/translations/translations.module";
 import { AuditModule } from "./audit/audit.module";
 import { RateLimitGuard } from "./security/rate-limit.guard";
 import { RolesGuard } from "./security/roles.guard";
@@ -38,6 +39,7 @@ import { SocketModule } from "./socket/socket.module";
     DocsModule,
     HealthModule,
     CategoriesModule,
+    TranslationsModule,
     AdminModule
   ],
   providers: [

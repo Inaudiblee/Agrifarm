@@ -3,6 +3,11 @@ export function getApiBase() {
   return base.replace(/\/$/, "");
 }
 
+export function resolveMediaUrl(url: string) {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${getApiBase()}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
 export async function parseApiError(response: Response): Promise<string> {
   try {
     const data = (await response.json()) as { message?: string | string[] };

@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <title>AgriFarm Short Reveal</title>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #fff7e8;
+        color: #14260e;
+        font-family: sans-serif;
+      }
+
+      #root {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #fff7e8;
+      }
+
+      .scene {
+        position: absolute;
+        inset: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background-color: #fff7e8;
+      }
+
+      #scene-1 {
+        z-index: 1;
+      }
+
+      #scene-2,
+      #scene-3,
+      #scene-4,
+      #scene-5 {
+        opacity: 0;
+      }
+
+      #scene-2 {
+        z-index: 2;
+      }
+
+      #scene-3 {
+        z-index: 3;
+      }
+
+      #scene-4 {
+        z-index: 4;
+      }
+
+      #scene-5 {
+        z-index: 5;
+        background-color: #14260e;
+        color: #fff7e8;
+      }
+
+      .scene-content {
+        position: relative;
+        z-index: 5;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 28px;
+        padding: 96px 126px;
+      }
+
+      .label {
+        width: fit-content;
+        border: 1px solid rgba(20, 92, 42, 0.26);
+        border-radius: 999px;
+        padding: 13px 18px;
+        background: rgba(255, 253, 247, 0.78);
+        color: #145c2a;
+        font-family: "IBM Plex Mono", "Consolas", monospace;
+        font-size: 20px;
+        font-weight: 700;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .title {
+        max-width: 1120px;
+        margin: 0;
+        color: #14260e;
+        font-family: Georgia, serif;
+        font-size: 106px;
+        font-weight: 900;
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      .body {
+        max-width: 740px;
+        margin: 0;
+        color: #36502d;
+        font-size: 31px;
+        font-weight: 500;
+        line-height: 1.38;
+      }
+
+      .small-note {
+        max-width: 930px;
+        color: #6b3f22;
+        font-family: "IBM Plex Mono", "Consolas", monospace;
+        font-size: 21px;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 22px;
+        color: #145c2a;
+        font-family: Georgia, serif;
+        font-size: 44px;
+        font-weight: 900;
+      }
+
+      .brand-mark {
+        display: grid;
+        place-items: center;
+        width: 82px;
+        height: 82px;
+        border-radius: 50%;
+        background: #145c2a;
+        color: #fff7e8;
+        font-family: Georgia, serif;
+        font-size: 56px;
+        line-height: 1;
+        box-shadow: 0 28px 55px rgba(20, 92, 42, 0.22);
+      }
+
+      .hero-image {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 1090px;
+        height: 1080px;
+        object-fit: cover;
+        object-position: center;
+      }
+
+      .hero-veil {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        background:
+          linear-gradient(90deg, #fff7e8 0%, rgba(255, 247, 232, 0.96) 34%, rgba(255, 247, 232, 0.22) 72%, rgba(255, 247, 232, 0) 100%),
+          radial-gradient(circle at 28% 24%, rgba(217, 154, 58, 0.34), rgba(217, 154, 58, 0) 28%);
+      }
+
+      .leaf {
+        position: absolute;
+        z-index: 3;
+        width: 190px;
+        opacity: 0.7;
+        filter: drop-shadow(0 18px 28px rgba(54, 80, 45, 0.15));
+      }
+
+      .leaf-left {
+        left: 54px;
+        bottom: 34px;
+        transform: rotate(-18deg);
+      }
+
+      .leaf-right {
+        right: 38px;
+        top: 28px;
+        transform: scaleX(-1) rotate(16deg);
+      }
+
+      .panel-row {
+        display: grid;
+        grid-template-columns: 0.86fr 1.14fr;
+        gap: 58px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .media-panel {
+        position: relative;
+        min-height: 650px;
+        overflow: hidden;
+        border: 1px solid rgba(107, 63, 34, 0.13);
+        border-radius: 34px;
+        background: #efe3c8;
+        box-shadow: 0 40px 90px rgba(107, 63, 34, 0.14);
+      }
+
+      .media-panel img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .media-panel.contain img {
+        object-fit: contain;
+        padding: 54px;
+      }
+
+      .floating-card {
+        position: absolute;
+        right: 58px;
+        bottom: 48px;
+        width: 430px;
+        border-radius: 28px;
+        padding: 28px;
+        background: rgba(255, 253, 247, 0.94);
+        box-shadow: 0 26px 52px rgba(37, 50, 23, 0.2);
+      }
+
+      .floating-card strong {
+        display: block;
+        color: #14260e;
+        font-family: Georgia, serif;
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      .floating-card span {
+        display: block;
+        margin-top: 12px;
+        color: #4b5e39;
+        font-size: 21px;
+        font-weight: 650;
+        line-height: 1.35;
+      }
+
+      .market-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        width: 100%;
+      }
+
+      .product-card {
+        min-height: 520px;
+        overflow: hidden;
+        border: 1px solid rgba(107, 63, 34, 0.13);
+        border-radius: 30px;
+        background: #fffdf7;
+        box-shadow: 0 24px 58px rgba(107, 63, 34, 0.1);
+      }
+
+      .product-card img {
+        width: 100%;
+        height: 300px;
+        object-fit: contain;
+        padding: 30px;
+        background: #f3ead3;
+      }
+
+      .product-card div {
+        padding: 28px;
+      }
+
+      .product-card strong {
+        display: block;
+        color: #14260e;
+        font-family: Georgia, serif;
+        font-size: 34px;
+        line-height: 1.04;
+      }
+
+      .product-card span {
+        display: block;
+        margin-top: 12px;
+        color: #36502d;
+        font-size: 22px;
+        font-weight: 700;
+      }
+
+      .forecast-wrap {
+        display: grid;
+        grid-template-columns: 0.92fr 1.08fr;
+        gap: 52px;
+        align-items: center;
+      }
+
+      .forecast-card {
+        border-radius: 38px;
+        padding: 46px;
+        background: #14260e;
+        color: #fff7e8;
+        box-shadow: 0 48px 90px rgba(20, 38, 14, 0.24);
+      }
+
+      .forecast-card h3 {
+        margin: 0 0 28px;
+        font-family: Georgia, serif;
+        font-size: 54px;
+        line-height: 1;
+      }
+
+      .forecast-step {
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        min-height: 76px;
+        border-top: 1px solid rgba(255, 247, 232, 0.16);
+        color: #efe3c8;
+        font-family: "IBM Plex Mono", "Consolas", monospace;
+        font-size: 23px;
+        font-weight: 700;
+      }
+
+      .dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        background: #d99a3a;
+        box-shadow: 0 0 0 10px rgba(217, 154, 58, 0.12);
+      }
+
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 18px;
+        height: 240px;
+        margin-top: 34px;
+      }
+
+      .bar {
+        flex: 1;
+        border-radius: 18px 18px 0 0;
+        background: linear-gradient(180deg, #f1c86a, #d99a3a);
+        transform-origin: bottom;
+      }
+
+      .map-stage {
+        position: absolute;
+        right: 92px;
+        top: 140px;
+        width: 720px;
+        height: 700px;
+        overflow: hidden;
+        border: 1px solid rgba(246, 210, 122, 0.22);
+        border-radius: 44px;
+        background: #dcebbf;
+        box-shadow: 0 42px 88px rgba(0, 0, 0, 0.22);
+      }
+
+      .map-stage img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .pin {
+        position: absolute;
+        display: grid;
+        place-items: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #f6d27a;
+        color: #14260e;
+        font-family: "IBM Plex Mono", "Consolas", monospace;
+        font-size: 20px;
+        font-weight: 800;
+        box-shadow: 0 0 0 12px rgba(246, 210, 122, 0.2);
+      }
+
+      .outro-title {
+        max-width: 1120px;
+        color: #fff7e8;
+        font-family: Georgia, serif;
+        font-size: 116px;
+        font-weight: 900;
+        line-height: 0.98;
+      }
+
+      .outro-body {
+        max-width: 760px;
+        color: #efe3c8;
+        font-size: 31px;
+        font-weight: 500;
+        line-height: 1.38;
+      }
+
+      .sample-badge {
+        position: absolute;
+        left: 126px;
+        bottom: 78px;
+        z-index: 8;
+        max-width: 690px;
+        border: 1px solid rgba(107, 63, 34, 0.16);
+        border-radius: 24px;
+        padding: 20px 24px;
+        background: rgba(255, 253, 247, 0.9);
+        color: #6b3f22;
+        font-family: "IBM Plex Mono", "Consolas", monospace;
+        font-size: 19px;
+        font-weight: 700;
+        line-height: 1.42;
+      }
+
+      .transition-leak {
+        position: absolute;
+        inset: -160px;
+        z-index: 20;
+        pointer-events: none;
+        opacity: 0;
+        background:
+          radial-gradient(circle at 18% 50%, rgba(246, 210, 122, 0.88), rgba(246, 210, 122, 0) 28%),
+          linear-gradient(90deg, rgba(255, 247, 232, 0), rgba(255, 247, 232, 0.94), rgba(217, 154, 58, 0));
+        filter: blur(8px);
+      }
+
+      .grain {
+        position: absolute;
+        inset: 0;
+        z-index: 4;
+        pointer-events: none;
+        opacity: 0.12;
+        background-image:
+          linear-gradient(rgba(20, 38, 14, 0.12) 1px, rgba(20, 38, 14, 0) 1px),
+          linear-gradient(90deg, rgba(20, 38, 14, 0.1) 1px, rgba(20, 38, 14, 0) 1px);
+        background-size: 64px 64px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="24" data-width="1920" data-height="1080">
+      <section id="scene-1" class="scene">
+        <img class="hero-image" src="assets/hero-pasig-rooftop-farm-composite.png" alt="" />
+        <div class="hero-veil"></div>
+        <img class="leaf leaf-left" src="assets/leafy-divider.png" alt="" />
+        <img class="leaf leaf-right" src="assets/leafy-divider.png" alt="" />
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="brand"><span class="brand-mark">•</span><span>AgriFarm</span></div>
+          <h1 class="title">Fresh food, local farmers, smarter seasons.</h1>
+          <p class="body">A Pasig City urban farming marketplace and seasonal forecasting prototype.</p>
+        </div>
+      </section>
+
+      <section id="scene-2" class="scene">
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="panel-row">
+            <div>
+              <div class="label">Prototype Preview</div>
+              <h2 class="title">Every harvest has a story.</h2>
+              <p class="body">Meet growers like Maria, discover nearby farms, and make local harvests easier to trust.</p>
+            </div>
+            <div class="media-panel">
+              <img src="assets/maria-harvest-basket.png" alt="" />
+              <div class="floating-card">
+                <strong>Maria's Garden</strong>
+                <span>Rooftop vegetables grown for nearby Pasig families.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sample-badge">Prototype UI only. Products, farmers, prices, forecasts, maps, and records shown are sample data for workflow demonstration.</div>
+      </section>
+
+      <section id="scene-3" class="scene">
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="label">Marketplace + Meals</div>
+          <h2 class="title">From browse to dinner.</h2>
+          <div class="market-grid">
+            <article class="product-card">
+              <img src="assets/marketplace-basket.png" alt="" />
+              <div><strong>Fresh Kangkong</strong><span>PHP 35 per bundle</span></div>
+            </article>
+            <article class="product-card">
+              <img src="assets/recipe-pinakbet.png" alt="" />
+              <div><strong>Pinakbet Bundle</strong><span>Local ingredients for family meals</span></div>
+            </article>
+            <article class="product-card">
+              <img src="assets/pasig-map-illustration.png" alt="" />
+              <div><strong>Explore Pasig</strong><span>Find barangay farms and service areas</span></div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-4" class="scene">
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="forecast-wrap">
+            <div>
+              <div class="label">SARIMA Planning</div>
+              <h2 class="title">Forecasts made practical.</h2>
+              <p class="body">Historical sales become seasonal patterns, demand signals, and plain-language seller guidance.</p>
+            </div>
+            <div class="forecast-card">
+              <h3>Demand Forecast</h3>
+              <div class="forecast-step"><span class="dot"></span><span>Historical sales</span></div>
+              <div class="forecast-step"><span class="dot"></span><span>Seasonal pattern</span></div>
+              <div class="forecast-step"><span class="dot"></span><span>SARIMA analysis</span></div>
+              <div class="forecast-step"><span class="dot"></span><span>Recommended action</span></div>
+              <div class="bars">
+                <div class="bar" style="height: 42%"></div>
+                <div class="bar" style="height: 62%"></div>
+                <div class="bar" style="height: 50%"></div>
+                <div class="bar" style="height: 78%"></div>
+                <div class="bar" style="height: 88%"></div>
+                <div class="bar" style="height: 68%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="scene-5" class="scene">
+        <div class="grain"></div>
+        <div class="scene-content">
+          <div class="label" style="background: rgba(246, 210, 122, 0.12); color: #f6d27a; border-color: rgba(246, 210, 122, 0.34)">For Pasig City</div>
+          <h2 class="outro-title">Growing a better Pasig, together.</h2>
+          <p class="outro-body">AgriFarm connects farmers, families, recipes, maps, and forecasting into one civic food experience.</p>
+          <div class="brand" style="color: #f6d27a"><span class="brand-mark" style="background: #f6d27a; color: #14260e">•</span><span>AgriFarm</span></div>
+        </div>
+        <div class="map-stage">
+          <img src="assets/pasig-interactive-map-base.svg" alt="" />
+          <div class="pin" style="left: 67%; top: 36%">6</div>
+          <div class="pin" style="left: 48%; top: 57%">2</div>
+          <div class="pin" style="left: 80%; top: 72%">3</div>
+        </div>
+      </section>
+
+      <div id="transition-leak" class="transition-leak"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const leak = "#transition-leak";
+
+      function fromIf(selector, vars, position) {
+        if (document.querySelector(selector)) {
+          tl.from(selector, vars, position);
+        }
+      }
+
+      function lightLeakTransition(fromScene, toScene, time) {
+        tl.set(leak, { x: -560 }, time);
+        tl.set(toScene, { opacity: 1 }, time + 0.28);
+        tl.from(toScene, { filter: "blur(14px)", scale: 1.025, duration: 0.66, ease: "sine.out" }, time + 0.28);
+        fromIf(`${toScene} .label`, { opacity: 0, x: -34, duration: 0.5, ease: "power3.out" }, time + 0.56);
+        fromIf(`${toScene} .title`, { opacity: 0, y: 54, duration: 0.74, ease: "expo.out" }, time + 0.68);
+        fromIf(`${toScene} .outro-title`, { opacity: 0, y: 54, duration: 0.74, ease: "expo.out" }, time + 0.68);
+        fromIf(`${toScene} .body`, { opacity: 0, x: 32, duration: 0.58, ease: "power2.out" }, time + 0.88);
+        fromIf(`${toScene} .outro-body`, { opacity: 0, x: 32, duration: 0.58, ease: "power2.out" }, time + 0.88);
+        fromIf(`${toScene} .media-panel`, { opacity: 0, scale: 0.96, duration: 0.8, ease: "back.out(1.15)" }, time + 0.76);
+        fromIf(`${toScene} .forecast-card`, { opacity: 0, scale: 0.96, duration: 0.8, ease: "back.out(1.15)" }, time + 0.76);
+        fromIf(`${toScene} .map-stage`, { opacity: 0, scale: 0.96, duration: 0.8, ease: "back.out(1.15)" }, time + 0.76);
+        fromIf(`${toScene} .product-card`, { opacity: 0, y: 48, scale: 0.98, duration: 0.58, stagger: 0.12, ease: "circ.out" }, time + 1.0);
+        tl.to(leak, { opacity: 1, x: 420, duration: 0.34, ease: "power3.inOut" }, time);
+        tl.to(leak, { opacity: 0, x: 920, duration: 0.42, ease: "sine.out" }, time + 0.34);
+        tl.set(fromScene, { opacity: 0 }, time + 0.76);
+      }
+
+      tl.from("#scene-1 .brand", { opacity: 0, x: -42, duration: 0.66, ease: "power3.out" }, 0.2);
+      tl.from("#scene-1 .title", { opacity: 0, y: 62, duration: 0.82, ease: "expo.out" }, 0.46);
+      tl.from("#scene-1 .body", { opacity: 0, x: 34, duration: 0.64, ease: "circ.out" }, 0.86);
+      tl.from("#scene-1 .hero-image", { scale: 1.08, opacity: 0.72, duration: 1.6, ease: "sine.out" }, 0.12);
+      tl.from("#scene-1 .leaf", { opacity: 0, scale: 0.82, rotation: -28, duration: 0.72, stagger: 0.18, ease: "back.out(1.4)" }, 0.64);
+
+      lightLeakTransition("#scene-1", "#scene-2", 4.1);
+      tl.from("#scene-2 .floating-card", { opacity: 0, y: 46, scale: 0.94, duration: 0.58, ease: "back.out(1.3)" }, 5.42);
+      tl.from("#scene-2 .sample-badge", { opacity: 0, y: 28, duration: 0.52, ease: "power2.out" }, 5.76);
+      tl.to("#scene-2 .media-panel img", { scale: 1.045, duration: 4.4, ease: "sine.inOut" }, 5.1);
+
+      lightLeakTransition("#scene-2", "#scene-3", 8.6);
+      tl.from("#scene-3 .product-card img", { scale: 0.84, duration: 0.72, stagger: 0.1, ease: "elastic.out(1, 0.72)" }, 9.75);
+
+      lightLeakTransition("#scene-3", "#scene-4", 13.0);
+      tl.from("#scene-4 .forecast-step", { opacity: 0, x: 46, duration: 0.45, stagger: 0.18, ease: "power4.out" }, 14.08);
+      tl.from("#scene-4 .bar", { scaleY: 0, duration: 0.58, stagger: 0.08, ease: "expo.out" }, 15.0);
+
+      lightLeakTransition("#scene-4", "#scene-5", 17.7);
+      tl.from("#scene-5 .pin", { opacity: 0, scale: 0.2, duration: 0.46, stagger: 0.15, ease: "back.out(2)" }, 19.06);
+      tl.to("#scene-5 .pin", { scale: 1.1, duration: 0.54, stagger: 0.14, yoyo: true, repeat: 2, ease: "sine.inOut" }, 20.2);
+      tl.to("#scene-5 .scene-content, #scene-5 .map-stage", { opacity: 0, duration: 0.86, ease: "power2.in" }, 23.0);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

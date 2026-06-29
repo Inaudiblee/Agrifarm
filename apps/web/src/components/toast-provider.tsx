@@ -37,7 +37,7 @@ export function ToastProvider({
   locale: Locale;
 }) {
   const [toast, setToast] = useState<ToastItem | null>(null);
-  const copy = getCopy(locale);
+  const copy = useMemo(() => getCopy(locale), [locale]);
 
   const dismiss = useCallback(() => setToast(null), []);
 

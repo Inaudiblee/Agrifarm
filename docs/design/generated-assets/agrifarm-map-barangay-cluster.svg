@@ -1,0 +1,15 @@
+<svg width="240" height="160" viewBox="0 0 240 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="30" y="82" width="48" height="42" rx="6" fill="#F8E7B7" stroke="#8B6B3F" stroke-width="3"/>
+  <path d="M24 84L54 55L85 84H24Z" fill="#D97836" stroke="#8B4C24" stroke-width="3"/>
+  <rect x="48" y="98" width="12" height="26" rx="2" fill="#6B8E4E"/>
+  <rect x="106" y="72" width="54" height="52" rx="6" fill="#FAF0CD" stroke="#8B6B3F" stroke-width="3"/>
+  <path d="M98 74L133 44L168 74H98Z" fill="#DFAE41" stroke="#8B6B3F" stroke-width="3"/>
+  <rect x="125" y="96" width="17" height="28" rx="2" fill="#2E7D32"/>
+  <rect x="174" y="88" width="38" height="36" rx="6" fill="#F7DCA0" stroke="#8B6B3F" stroke-width="3"/>
+  <path d="M169 90L193 66L218 90H169Z" fill="#C65F35" stroke="#8B4C24" stroke-width="3"/>
+  <circle cx="198" cy="116" r="12" fill="#7FBF68"/>
+  <path d="M198 104V130" stroke="#2F6D3B" stroke-width="3"/>
+  <path d="M82 126C106 114 132 113 166 126" stroke="#94B65B" stroke-width="7" stroke-linecap="round"/>
+  <path d="M92 111C98 98 105 98 110 111C104 108 98 108 92 111Z" fill="#4F9B47"/>
+  <path d="M151 111C157 98 164 98 169 111C163 108 157 108 151 111Z" fill="#4F9B47"/>
+</svg>

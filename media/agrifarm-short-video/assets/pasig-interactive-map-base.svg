@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1360" height="820" viewBox="0 0 1000 700" role="img" aria-label="Illustrated schematic map of Pasig City">
+  <defs>
+    <linearGradient id="land" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#f7e6b4"/>
+      <stop offset="0.48" stop-color="#d9e8b4"/>
+      <stop offset="1" stop-color="#a9cf86"/>
+    </linearGradient>
+    <linearGradient id="river" x1="0" x2="1" y1="0" y2="0">
+      <stop offset="0" stop-color="#8fc8d5"/>
+      <stop offset="0.55" stop-color="#4c9eb5"/>
+      <stop offset="1" stop-color="#327b9a"/>
+    </linearGradient>
+    <filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#5e481c" flood-opacity="0.18"/>
+    </filter>
+    <pattern id="field-dots" width="34" height="34" patternUnits="userSpaceOnUse">
+      <circle cx="7" cy="8" r="2.3" fill="#7faa55" opacity="0.38"/>
+      <circle cx="24" cy="23" r="2.8" fill="#d2a34c" opacity="0.28"/>
+    </pattern>
+  </defs>
+  <rect width="1000" height="700" fill="#eff4cf"/>
+  <path d="M86 310 C112 174 256 108 407 111 C547 114 565 62 690 92 C831 126 923 221 936 362 C947 492 844 604 688 630 C544 654 449 604 318 641 C194 675 74 607 59 489 C51 428 74 370 86 310Z" fill="url(#land)" filter="url(#soft-shadow)"/>
+  <path d="M88 311 C116 183 255 123 401 126 C540 129 567 79 686 109 C812 140 903 226 917 360 C930 484 831 586 685 611 C543 635 451 588 322 623 C208 654 91 594 77 487 C69 429 77 370 88 311Z" fill="url(#field-dots)" opacity="0.72"/>
+  <path d="M75 507 C205 461 307 477 412 511 C527 548 638 549 748 503 C826 470 879 470 934 490" fill="none" stroke="url(#river)" stroke-width="58" stroke-linecap="round" opacity="0.96"/>
+  <path d="M75 507 C205 461 307 477 412 511 C527 548 638 549 748 503 C826 470 879 470 934 490" fill="none" stroke="#e9fbff" stroke-width="8" stroke-linecap="round" opacity="0.6"/>
+  <path d="M142 197 C238 282 302 344 392 432 C482 520 571 582 671 619" fill="none" stroke="#b88943" stroke-width="17" stroke-linecap="round" opacity="0.74"/>
+  <path d="M319 116 C333 222 392 309 488 373 C587 439 727 443 898 374" fill="none" stroke="#c79b56" stroke-width="14" stroke-linecap="round" opacity="0.68"/>
+  <path d="M226 628 C318 543 413 474 506 397 C594 324 681 248 775 116" fill="none" stroke="#9f7841" stroke-width="12" stroke-linecap="round" opacity="0.55"/>
+  <path d="M82 311 C116 183 255 123 401 126 C540 129 567 79 686 109 C812 140 903 226 917 360 C930 484 831 586 685 611 C543 635 451 588 322 623 C208 654 91 594 77 487 C69 429 77 370 82 311Z" fill="none" stroke="#5d8f49" stroke-width="6" stroke-linejoin="round"/>
+  <g opacity="0.95">
+    <circle cx="186" cy="221" r="20" fill="#7faa55"/>
+    <circle cx="214" cy="237" r="15" fill="#5e9442"/>
+    <circle cx="710" cy="178" r="22" fill="#6eaa4d"/>
+    <circle cx="744" cy="193" r="17" fill="#5e9442"/>
+    <circle cx="832" cy="569" r="21" fill="#7faa55"/>
+    <circle cx="866" cy="582" r="14" fill="#5e9442"/>
+  </g>
+  <g fill="#fff7df" stroke="#b88943" stroke-width="4" opacity="0.85">
+    <rect x="257" y="300" width="45" height="39" rx="8"/>
+    <rect x="640" y="262" width="48" height="42" rx="8"/>
+    <rect x="469" y="583" width="44" height="36" rx="8"/>
+  </g>
+</svg>

@@ -9,7 +9,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { getCopy, getStoredLocale, storeLocale, type Copy, type Locale } from "@/lib/i18n";
+import { getApiBase } from "@/lib/api";
+import { getCopy, getStoredLocale, storeLocale, type Copy, type Locale, type TranslationOverrideMap } from "@/lib/i18n";
 import { HtmlLangSync } from "./html-lang-sync";
 import { ToastProvider, useToast } from "./toast-provider";
 
@@ -25,6 +26,30 @@ const LocaleContext = createContext<LocaleContextValue | null>(null);
 function LocaleBridge({ children }: { children: ReactNode }) {
   const { locale, setLocaleState, hasChosenLanguage, setHasChosenLanguage } = useLocaleInternal();
   const { showToast } = useToast();
+  const [overrides, setOverrides] = useState<TranslationOverrideMap>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTranslations() {
+      try {
+        const response = await fetch(`${getApiBase()}/api/translations`);
+        if (!response.ok) return;
+        const data = (await response.json()) as { locales?: TranslationOverrideMap };
+        if (!cancelled) {
+          setOverrides(data.locales ?? {});
+        }
+      } catch {
+        // Source translations remain the safe fallback when the API is unavailable.
+      }
+    }
+
+    void loadTranslations();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const setLocale = useCallback(
     (next: Locale, options?: { silent?: boolean }) => {
@@ -33,7 +58,7 @@ function LocaleBridge({ children }: { children: ReactNode }) {
       setHasChosenLanguage(true);
 
       if (!options?.silent) {
-        const nextCopy = getCopy(next);
+        const nextCopy = getCopy(next, overrides[next]);
         showToast({
           type: "success",
           title: nextCopy.notify.title.success,
@@ -41,17 +66,17 @@ function LocaleBridge({ children }: { children: ReactNode }) {
         });
       }
     },
-    [setHasChosenLanguage, setLocaleState, showToast]
+    [overrides, setHasChosenLanguage, setLocaleState, showToast]
   );
 
   const value = useMemo(
     () => ({
       locale,
-      copy: getCopy(locale),
+      copy: getCopy(locale, overrides[locale]),
       setLocale,
       hasChosenLanguage,
     }),
-    [locale, setLocale, hasChosenLanguage]
+    [locale, overrides, setLocale, hasChosenLanguage]
   );
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>;
@@ -75,7 +100,6 @@ function useLocaleInternal(): InternalState {
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>("en");
   const [hasChosenLanguage, setHasChosenLanguage] = useState(false);
-  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const stored = getStoredLocale();
@@ -83,7 +107,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       setLocaleState(stored);
       setHasChosenLanguage(true);
     }
-    setReady(true);
   }, []);
 
   const internal = useMemo(
@@ -95,10 +118,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     }),
     [locale, hasChosenLanguage]
   );
-
-  if (!ready) {
-    return null;
-  }
 
   return (
     <LocaleInternalContext.Provider value={internal}>

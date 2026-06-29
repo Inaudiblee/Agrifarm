@@ -168,11 +168,11 @@ const endpoints: ApiEndpoint[] = [
     path: "/api/sellers/profile",
     auth: true,
     title: "Create seller profile",
-    description: "Turns the current user into a seller and creates or updates their profile.",
+    description: "Creates or updates the current seller profile and farmer character.",
     sampleBody: {
       businessName: "Pasig Urban Farm",
-      businessPermitNo: "PASIG-2026-001",
-      taxId: "TIN-000-000-000"
+      gender: "FEMALE",
+      avatarKey: "female-01"
     }
   },
   {

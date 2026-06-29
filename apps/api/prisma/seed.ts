@@ -103,6 +103,8 @@ async function main() {
       businessName: "Rosario Fresh Farm",
       storeName: "Rosario Fresh",
       slug: "rosario-fresh",
+      gender: "FEMALE" as const,
+      avatarKey: "female-02",
       areas: ["Kapitolyo", "San Antonio", "Rosario"],
       product: { name: "Tomato", slug: "tomato", sku: "ROS-TOM-KG", price: "72.00", stockOnHand: 80 }
     },
@@ -112,6 +114,8 @@ async function main() {
       businessName: "Pinagbuhatan Growers",
       storeName: "Pinagbuhatan Growers",
       slug: "pinagbuhatan-growers",
+      gender: "MALE" as const,
+      avatarKey: "male-03",
       areas: ["Kapitolyo", "Pineda", "Pinagbuhatan"],
       product: { name: "Eggplant", slug: "eggplant", sku: "PIN-EGG-KG", price: "64.00", stockOnHand: 70 }
     }
@@ -131,8 +135,8 @@ async function main() {
 
     const profile = await prisma.sellerProfile.upsert({
       where: { userId: user.id },
-      create: { userId: user.id, businessName: sellerSeed.businessName, verifiedAt: new Date() },
-      update: { businessName: sellerSeed.businessName }
+      create: { userId: user.id, businessName: sellerSeed.businessName, gender: sellerSeed.gender, avatarKey: sellerSeed.avatarKey, verifiedAt: new Date() },
+      update: { businessName: sellerSeed.businessName, gender: sellerSeed.gender, avatarKey: sellerSeed.avatarKey }
     });
 
     const store = await prisma.store.upsert({
@@ -143,7 +147,7 @@ async function main() {
         slug: sellerSeed.slug,
         status: StoreStatus.ACTIVE
       },
-      update: { sellerProfileId: profile.id, name: sellerSeed.storeName, status: StoreStatus.ACTIVE }
+      update: { sellerProfileId: profile.id, name: sellerSeed.storeName, status: StoreStatus.ACTIVE, deletedAt: null }
     });
 
     for (const areaName of sellerSeed.areas) {
@@ -163,7 +167,7 @@ async function main() {
         slug: sellerSeed.product.slug,
         status: "ACTIVE"
       },
-      update: { name: sellerSeed.product.name, status: "ACTIVE" }
+      update: { name: sellerSeed.product.name, status: "ACTIVE", deletedAt: null }
     });
 
     await prisma.productVariant.upsert({

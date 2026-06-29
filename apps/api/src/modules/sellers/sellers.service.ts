@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
-import { AuditAction, User, UserRole } from "@prisma/client";
+import { AuditAction, FarmerGender, User } from "@prisma/client";
 import { AuditService } from "../../audit/audit.service";
 import { PrismaService } from "../../prisma/prisma.service";
 
@@ -17,24 +17,24 @@ export class SellersService {
     });
   }
 
-  async upsertProfile(user: User, input: { businessName: string; businessPermitNo?: string; taxId?: string }) {
-    return this.prisma.$transaction(async (tx) => {
-      if (user.role !== UserRole.SELLER) {
-        await tx.user.update({ where: { id: user.id }, data: { role: UserRole.SELLER } });
-      }
+  async upsertProfile(user: User, input: { businessName: string; gender?: FarmerGender; avatarKey?: string }) {
+    if (input.gender && input.avatarKey && !input.avatarKey.startsWith(input.gender.toLowerCase())) {
+      throw new BadRequestException("Choose a farmer character that matches the selected gender.");
+    }
 
+    return this.prisma.$transaction(async (tx) => {
       const profile = await tx.sellerProfile.upsert({
         where: { userId: user.id },
         create: {
           userId: user.id,
           businessName: input.businessName,
-          businessPermitNo: input.businessPermitNo,
-          taxId: input.taxId
+          gender: input.gender,
+          avatarKey: input.avatarKey
         },
         update: {
           businessName: input.businessName,
-          businessPermitNo: input.businessPermitNo,
-          taxId: input.taxId
+          gender: input.gender,
+          avatarKey: input.avatarKey
         }
       });
       await this.audit.write({
