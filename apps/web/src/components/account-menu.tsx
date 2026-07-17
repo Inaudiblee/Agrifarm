@@ -25,12 +25,16 @@ export function AccountMenu({
   accountLabel,
   dashboardHref,
   settingsHref,
+  dashboardLabel,
+  showSettings = true,
   compact = false,
 }: {
   user: AuthUser;
   accountLabel: string;
   dashboardHref: string;
   settingsHref: string;
+  dashboardLabel?: string;
+  showSettings?: boolean;
   compact?: boolean;
 }) {
   const { locale } = useLocale();
@@ -60,12 +64,14 @@ export function AccountMenu({
         </div>
         <Link href={dashboardHref}>
           <LayoutDashboard size={18} />
-          <span>{t.dashboard}</span>
+          <span>{dashboardLabel ?? t.dashboard}</span>
         </Link>
-        <Link href={settingsHref}>
-          <Settings size={18} />
-          <span>{t.settings}</span>
-        </Link>
+        {showSettings ? (
+          <Link href={settingsHref}>
+            <Settings size={18} />
+            <span>{t.settings}</span>
+          </Link>
+        ) : null}
         <button type="button" onClick={logout}>
           <LogOut size={18} />
           <span>{t.logout}</span>

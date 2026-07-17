@@ -7,8 +7,13 @@ import { RolesGuard } from "../../security/roles.guard";
 import { ProductsService } from "./products.service";
 
 class CreateProductDto {
+  @IsOptional()
   @IsString()
-  storeId!: string;
+  storeId?: string;
+
+  @IsOptional()
+  @IsString()
+  urbanGardenName?: string;
 
   @IsString()
   name!: string;

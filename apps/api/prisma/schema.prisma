@@ -40,6 +40,10 @@ enum ProductStatus {
 }
 
 enum OrderStatus {
+  PENDING_PAYMENT
+  RESERVED
+  COMPLETED
+  EXPIRED
   PENDING
   CONFIRMED
   PREPARING
@@ -50,6 +54,9 @@ enum OrderStatus {
 }
 
 enum SellerOrderStatus {
+  RESERVED
+  COMPLETED
+  EXPIRED
   PENDING
   CONFIRMED
   PREPARING
@@ -69,6 +76,7 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
+  CASH_ON_PICKUP
   CASH_ON_DELIVERY
   GCASH
   MAYA
@@ -87,6 +95,9 @@ enum FulfillmentStatus {
 }
 
 enum InventoryChangeReason {
+  RESERVATION
+  RESERVATION_RELEASE
+  PICKUP_COMPLETION
   INITIAL_STOCK
   RESTOCK
   SALE
@@ -318,6 +329,9 @@ model ProductVariant {
   price             Decimal           @db.Decimal(12, 2)
   compareAtPrice    Decimal?          @db.Decimal(12, 2)
   stockOnHand       Int               @default(0)
+  totalStock        Int               @default(0)
+  availableStock    Int               @default(0)
+  reservedStock     Int               @default(0)
   lowStockThreshold Int               @default(5)
   isActive          Boolean           @default(true)
   createdAt         DateTime          @default(now())
@@ -418,20 +432,25 @@ model Order {
   id                String                 @id @default(cuid())
   orderNumber       String                 @unique @db.VarChar(40)
   buyerId           String
-  shippingAddressId String
-  status            OrderStatus            @default(PENDING)
+  shippingAddressId String?
+  status            OrderStatus            @default(PENDING_PAYMENT)
   paymentStatus     PaymentStatus          @default(PENDING)
   subtotal          Decimal                @db.Decimal(12, 2)
   deliveryFee       Decimal                @default(0) @db.Decimal(12, 2)
   discountTotal     Decimal                @default(0) @db.Decimal(12, 2)
   grandTotal        Decimal                @db.Decimal(12, 2)
+  depositAmount     Decimal                @default(0) @db.Decimal(12, 2)
+  remainingBalance  Decimal                @default(0) @db.Decimal(12, 2)
+  pickupScheduledAt DateTime?
+  expiresAt         DateTime?
+  clearCartOnPaid   Boolean                @default(false)
   notes             String?
   placedAt          DateTime               @default(now())
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
   cancelledAt       DateTime?
   buyer             User                   @relation("BuyerOrders", fields: [buyerId], references: [id], onDelete: Restrict)
-  shippingAddress   Address                @relation(fields: [shippingAddressId, buyerId], references: [id, userId], onDelete: Restrict)
+  shippingAddress   Address?               @relation(fields: [shippingAddressId, buyerId], references: [id, userId], onDelete: Restrict)
   items             OrderItem[]
   sellerOrders      SellerOrder[]
   payments          Payment[]
@@ -441,27 +460,31 @@ model Order {
   @@index([status])
   @@index([paymentStatus])
   @@index([placedAt])
+  @@index([pickupScheduledAt])
+  @@index([expiresAt])
 }
 
 model SellerOrder {
-  id              String                 @id @default(cuid())
-  orderId         String
-  storeId         String
-  status          SellerOrderStatus      @default(PENDING)
-  subtotal        Decimal                @db.Decimal(12, 2)
-  deliveryFee     Decimal                @default(0) @db.Decimal(12, 2)
-  commissionFee   Decimal                @default(0) @db.Decimal(12, 2)
-  payoutAmount    Decimal                @db.Decimal(12, 2)
-  confirmedAt     DateTime?
-  cancelledAt     DateTime?
-  deliveredAt     DateTime?
-  createdAt       DateTime               @default(now())
-  updatedAt       DateTime               @updatedAt
-  order           Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  store           Store                  @relation(fields: [storeId], references: [id], onDelete: Restrict)
-  items           OrderItem[]
-  fulfillment     Fulfillment?
-  financialLedger FinancialTransaction[]
+  id               String                 @id @default(cuid())
+  orderId          String
+  storeId          String
+  status           SellerOrderStatus      @default(PENDING)
+  subtotal         Decimal                @db.Decimal(12, 2)
+  deliveryFee      Decimal                @default(0) @db.Decimal(12, 2)
+  commissionFee    Decimal                @default(0) @db.Decimal(12, 2)
+  payoutAmount     Decimal                @db.Decimal(12, 2)
+  remainingBalance Decimal                @default(0) @db.Decimal(12, 2)
+  balancePaidAt    DateTime?
+  confirmedAt      DateTime?
+  cancelledAt      DateTime?
+  deliveredAt      DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+  order            Order                  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  store            Store                  @relation(fields: [storeId], references: [id], onDelete: Restrict)
+  items            OrderItem[]
+  fulfillment      Fulfillment?
+  financialLedger  FinancialTransaction[]
 
   @@unique([orderId, storeId])
   @@unique([id, storeId])
@@ -1063,10 +1086,80 @@ model AgriculturalStatistic {
   site             FarmingSite?            @relation(fields: [siteId], references: [id], onDelete: SetNull)
   source           AgriculturalDataSource? @relation(fields: [sourceId], references: [id], onDelete: SetNull)
 
-  @@unique([sourceId, externalRecordId])
+  @@index([sourceId, externalRecordId])
   @@index([metricName, periodStart])
   @@index([cropId, periodStart])
   @@index([barangayId, periodStart])
   @@index([siteId])
   @@index([sourceId])
+}
+
+model HistoricalReport {
+  id               String       @id @default(cuid())
+  reportName       String       @db.VarChar(255)
+  reportType       String       // "DAILY" | "WEEKLY" | "MONTHLY"
+  uploadDate       DateTime     @default(now())
+  uploadedBy       String       @db.VarChar(255)
+  dataSource       String       @db.VarChar(255)
+  dateRange        String       @db.VarChar(120) // e.g. "Jan 2023 - Jun 2026"
+  recordsCount     Int
+  productsIncluded String       @db.Text // Comma-separated product names
+  fileContent      String       @db.Text // Store full CSV content for download and view
+}
+
+model ForecastRun {
+  id                 String                  @id @default(cuid())
+  forecastDate       DateTime                @default(now())
+  datasetUsed        String                  @db.VarChar(255)
+  productsForecasted Int
+  sarimaModel        String                  @db.VarChar(120)
+  mape               Decimal                 @db.Decimal(5, 2)
+  duration           Int                     // in milliseconds
+  status             String                  // "RUNNING" | "SUCCESS" | "FAILED"
+  results            ForecastResult[]
+  recommendations    ForecastRecommendation[]
+  logs               ForecastLog[]
+}
+
+model ForecastResult {
+  id                 String             @id @default(cuid())
+  runId              String
+  product            String             @db.VarChar(160)
+  historicalDemand   Json               // Array of monthly history { month: "2026-06", value: 120 }
+  forecastNextMonth  Decimal            @db.Decimal(14, 2)
+  forecastNext3Months Json              // Array of next 3 months { month: "2026-07", value: 130 }
+  trend              String             // "INCREASING" | "DECREASING" | "STABLE"
+  confidence         Decimal            @db.Decimal(5, 2)
+  mape               Decimal            @db.Decimal(5, 2)
+  mae                Decimal            @db.Decimal(12, 2)
+  rmse               Decimal            @db.Decimal(12, 2)
+  status             String             // "GOOD" | "WARNING" | "NEEDS_RETRAINING"
+  modelUsed          String             @db.VarChar(120) // e.g. "SARIMA(1,1,1)(1,1,1)12"
+  trainingDatasetSize Int
+  testingDatasetSize  Int
+  run                ForecastRun        @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+model ForecastRecommendation {
+  id             String      @id @default(cuid())
+  runId          String
+  product        String      @db.VarChar(160)
+  recommendation String      @db.Text
+  run            ForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+model ForecastSchedule {
+  id         String   @id @default(cuid())
+  schedule   String   @db.VarChar(20) // "MANUAL" | "DAILY" | "WEEKLY" | "MONTHLY"
+  updatedAt  DateTime @updatedAt
+}
+
+model ForecastLog {
+  id        String      @id @default(cuid())
+  runId     String
+  stepName  String      @db.VarChar(120)
+  status    String      @db.VarChar(20) // "PENDING" | "RUNNING" | "SUCCESS" | "FAILED"
+  output    String?     @db.Text
+  updatedAt DateTime    @updatedAt
+  run       ForecastRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 }

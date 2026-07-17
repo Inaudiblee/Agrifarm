@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Languages, Leaf, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowLeft, Languages, ShieldCheck, UserRound } from "lucide-react";
 import { AccountMenu } from "@/components/account-menu";
 import { useLocale } from "@/components/locale-provider";
 import { getAuthToken, getAuthUser, type AuthUser } from "@/lib/auth-storage";
 import { getRoleHomeHref, isSeller } from "@/lib/auth-routing";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -35,7 +36,7 @@ export default function SettingsPage() {
     <div className="settings-shell">
       <header className="settings-header">
         <Link href="/" className="settings-brand">
-          <span><Leaf size={22} /></span>
+          <span><img src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" /></span>
           <strong>AGRI<span>FARM</span></strong>
         </Link>
         <AccountMenu user={user} accountLabel={accountLabel} dashboardHref={dashboardHref} settingsHref="/settings" />

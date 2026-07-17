@@ -16,12 +16,12 @@ const endpoints: ApiEndpoint[] = [
     path: "/api/auth/register",
     auth: false,
     title: "Register user",
-    description: "Create a buyer or seller account. Use SELLER role for sellers.",
+    description: "Create a buyer account. Sellers should use the Seller Portal.",
     sampleBody: {
-      email: "newbuyer@example.com",
+      email: "newbuyer@gmail.com",
       password: "password123",
       fullName: "New Buyer",
-      phone: "09170000000",
+      phone: "0917 000 0000",
       role: "BUYER"
     }
   },
@@ -122,7 +122,7 @@ const endpoints: ApiEndpoint[] = [
     sampleBody: {
       label: "Home",
       recipientName: "Pasig Buyer",
-      phone: "09170000000",
+      phone: "0917 000 0000",
       street: "1 Market Street",
       barangay: "Kapitolyo",
       isDefault: true
@@ -180,7 +180,7 @@ const endpoints: ApiEndpoint[] = [
     path: "/api/sellers/me",
     auth: true,
     title: "My seller profile",
-    description: "Shows the current seller profile and stores."
+    description: "Shows the current seller profile."
   },
   {
     method: "POST",

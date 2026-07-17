@@ -4,7 +4,6 @@ import {
   getLoginPasswordIssue,
   getRegisterPasswordIssue,
   isValidEmail,
-  isValidPhone,
   normalizeEmail,
 } from "@/lib/auth-rules";
 
@@ -22,25 +21,31 @@ export function validateLogin(email: string, password: string): NotifyMessageKey
 }
 
 export function validateRegister(
-  fullName: string,
+  firstName: string,
+  lastName: string,
   email: string,
   password: string,
-  phone?: string
+  confirmPassword: string,
+  acceptedTerms: boolean
 ): NotifyMessageKey | null {
-  const trimmedName = fullName.trim().replace(/\s+/g, " ");
+  const trimmedFirstName = firstName.trim().replace(/\s+/g, " ");
+  const trimmedLastName = lastName.trim().replace(/\s+/g, " ");
+  const fullName = `${trimmedFirstName} ${trimmedLastName}`.trim();
   const trimmedEmail = email.trim();
 
-  if (!trimmedName) return "fullNameRequired";
-  if (trimmedName.length < AUTH_LIMITS.fullNameMin) return "fullNameShort";
-  if (trimmedName.length > AUTH_LIMITS.fullNameMax) return "fullNameLong";
+  if (!trimmedFirstName) return "firstNameRequired";
+  if (!trimmedLastName) return "lastNameRequired";
+  if (fullName.length < AUTH_LIMITS.fullNameMin) return "fullNameShort";
+  if (fullName.length > AUTH_LIMITS.fullNameMax) return "fullNameLong";
   if (!trimmedEmail) return "emailRequired";
   if (trimmedEmail.length > AUTH_LIMITS.emailMax) return "emailTooLong";
   if (!isValidEmail(trimmedEmail)) return "emailInvalid";
+  if (!normalizeEmail(trimmedEmail).endsWith("@gmail.com")) return "emailGmailRequired";
 
   const passwordIssue = getRegisterPasswordIssue(password);
   if (passwordIssue) return passwordIssue;
-
-  if (phone && !isValidPhone(phone)) return "phoneInvalid";
+  if (password !== confirmPassword) return "passwordMismatch";
+  if (!acceptedTerms) return "termsRequired";
 
   return null;
 }

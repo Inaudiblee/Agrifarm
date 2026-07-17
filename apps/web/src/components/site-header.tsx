@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useLocale } from "./locale-provider";
 import { LanguageSwitch } from "./language-switch";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 export type ActivePage = "home" | "about" | "shop" | "howItWorks" | "contact" | "login" | "register";
 
@@ -17,7 +18,7 @@ export function SiteHeader({ active }: { active?: ActivePage }) {
       <div className="auth-header-inner">
         <Link href="/" className="brand-plaque auth-brand" aria-label="AgriFarm home">
           <span className="brand-mark" aria-hidden="true">
-            <span />
+            <img src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" />
           </span>
           <span className="brand-text-wrap">
             <span className="brand-eyebrow">Barangay Grown</span>

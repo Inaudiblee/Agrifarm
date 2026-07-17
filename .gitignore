@@ -7,6 +7,10 @@ node_modules/
 dist/
 coverage/
 *.log
+*.tsbuildinfo
+apps/api/scripts/temp/
+docs/database/_make-inspection/
+media/agrifarm-short-video/renders/
 apps/api/uploads/*
 !apps/api/uploads/.gitkeep
 !apps/api/uploads/catalog/

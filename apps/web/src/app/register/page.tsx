@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 import { AuthCard } from "@/components/auth-card";
 import { useLocale } from "@/components/locale-provider";
 import { useToast } from "@/components/toast-provider";
@@ -10,30 +11,45 @@ import { checkEmailAvailability } from "@/lib/auth-api";
 import { getApiBase, parseApiError } from "@/lib/api";
 import { getAuthToken, getAuthUser, saveAuthSession, type AuthSession } from "@/lib/auth-storage";
 import { getRoleHomeHref } from "@/lib/auth-routing";
-import { isValidEmail, normalizeEmail } from "@/lib/auth-rules";
+import { AUTH_LIMITS, isValidEmail, normalizeEmail } from "@/lib/auth-rules";
 import { validateRegister } from "@/lib/form-validation";
 
 const inputClass = "auth-input";
+type FocusedRegisterField = "password" | "confirmPassword" | "terms" | null;
 
-type Role = "BUYER" | "SELLER";
+function isAllowedGmailAddress(value: string) {
+  return isValidEmail(value) && normalizeEmail(value).endsWith("@gmail.com");
+}
 
 export default function RegisterPage() {
   const { copy: t } = useLocale();
-  const { notify } = useToast();
+  const { notify, showToast } = useToast();
   const router = useRouter();
-  const [fullName, setFullName] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState<Role>("BUYER");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [focusedField, setFocusedField] = useState<FocusedRegisterField>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingEmail, setCheckingEmail] = useState(false);
   const lastCheckedEmail = useRef("");
 
-  const roleOptions = [
-    { value: "BUYER" as const, label: t.register.buyer },
-    { value: "SELLER" as const, label: t.register.seller },
+  const passwordRules = [
+    {
+      label: t.register.passwordRules.length,
+      valid: password.length >= AUTH_LIMITS.passwordMin && password.length <= AUTH_LIMITS.passwordMax,
+    },
+    { label: t.register.passwordRules.uppercase, valid: /[A-Z]/.test(password) },
+    { label: t.register.passwordRules.lowercase, valid: /[a-z]/.test(password) },
+    { label: t.register.passwordRules.number, valid: /\d/.test(password) },
+    { label: t.register.passwordRules.noSpaces, valid: password.length > 0 && !/\s/.test(password) },
   ];
+  const hasEmailValue = email.trim().length > 0;
+  const emailIsValid = !hasEmailValue || isAllowedGmailAddress(email);
 
   useEffect(() => {
     const token = getAuthToken();
@@ -49,7 +65,7 @@ export default function RegisterPage() {
 
   async function handleEmailBlur() {
     const normalized = normalizeEmail(email);
-    if (!normalized || !isValidEmail(normalized) || normalized === lastCheckedEmail.current) {
+    if (!normalized || !isAllowedGmailAddress(normalized) || normalized === lastCheckedEmail.current) {
       return;
     }
 
@@ -69,10 +85,18 @@ export default function RegisterPage() {
     }
   }
 
+  function handleFieldBlur(field: FocusedRegisterField) {
+    return () => {
+      window.setTimeout(() => {
+        setFocusedField((current) => (current === field ? null : current));
+      }, 120);
+    };
+  }
+
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
 
-    const validationError = validateRegister(fullName, email, password, phone);
+    const validationError = validateRegister(firstName, lastName, email, password, confirmPassword, acceptedTerms);
     if (validationError) {
       notify("warning", validationError);
       return;
@@ -92,17 +116,16 @@ export default function RegisterPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fullName: fullName.trim().replace(/\s+/g, " "),
+          fullName: `${firstName} ${lastName}`.trim().replace(/\s+/g, " "),
           email: normalized,
           password,
-          role,
-          ...(phone.trim() ? { phone: phone.trim() } : {}),
+          role: "BUYER",
         }),
       });
 
       if (!response.ok) {
-        await parseApiError(response);
-        notify("error", "registerFailed");
+        const message = await parseApiError(response);
+        showToast({ type: "error", message });
         return;
       }
 
@@ -125,87 +148,139 @@ export default function RegisterPage() {
       subtitle={t.register.subtitle}
       footer={
         <>
-          {t.register.footer}{" "}
-          <Link href="/login" className="auth-inline-link">
-            {t.register.footerLink}
-          </Link>
+          <span>
+            {t.register.footer}{" "}
+            <Link href="/login" className="auth-inline-link">
+              {t.register.footerLink}
+            </Link>
+          </span>
         </>
       }
     >
       <form onSubmit={onSubmit} noValidate className="space-y-4">
-        <label className="auth-field">
-          <span className="auth-label">{t.register.fullName}</span>
-          <input
-            type="text"
-            autoComplete="name"
-            value={fullName}
-            onChange={(e) => setFullName(e.target.value)}
-            className={inputClass}
-            placeholder="Juan Dela Cruz"
-          />
-        </label>
+        <div className="auth-name-grid">
+          <label className="auth-field">
+            <span className="auth-label">{t.register.firstName}</span>
+            <input
+              type="text"
+              autoComplete="given-name"
+              value={firstName}
+              onChange={(event) => setFirstName(event.target.value)}
+              className={inputClass}
+              placeholder="Juan"
+            />
+          </label>
+          <label className="auth-field">
+            <span className="auth-label">{t.register.lastName}</span>
+            <input
+              type="text"
+              autoComplete="family-name"
+              value={lastName}
+              onChange={(event) => setLastName(event.target.value)}
+              className={inputClass}
+              placeholder="Dela Cruz"
+            />
+          </label>
+        </div>
+
         <label className="auth-field">
           <span className="auth-label">{t.register.email}</span>
           <input
             type="email"
             autoComplete="email"
             value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
+            onChange={(event) => {
+              setEmail(event.target.value);
               lastCheckedEmail.current = "";
             }}
-            onBlur={handleEmailBlur}
-            className={inputClass}
-            placeholder="you@example.com"
+            onBlur={() => void handleEmailBlur()}
+            className={`${inputClass}${!emailIsValid ? " is-invalid" : ""}`}
+            aria-invalid={!emailIsValid}
+            placeholder="agrifarm@gmail.com"
           />
-          {checkingEmail && <p className="auth-help-text">Checking availability...</p>}
+          {!emailIsValid && <p className="auth-help-text is-error">{t.register.gmailInvalidInline}</p>}
+          {checkingEmail && <p className="auth-help-text">{t.register.checkingEmail}</p>}
         </label>
-        <label className="auth-field">
-          <span className="auth-label">
-            {t.register.phone} <span className="auth-optional">{t.register.optional}</span>
-          </span>
-          <input
-            type="tel"
-            autoComplete="tel"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            className={inputClass}
-            placeholder="09XX XXX XXXX"
-          />
-        </label>
-        <fieldset className="border-0 p-0 m-0">
-          <legend className="auth-label mb-2">{t.register.roleLegend}</legend>
-          <div className="grid grid-cols-2 gap-3">
-            {roleOptions.map((option) => (
-              <label
-                key={option.value}
-                className={`auth-role-option${role === option.value ? " is-selected" : ""}`}
-              >
-                <input
-                  type="radio"
-                  name="role"
-                  value={option.value}
-                  checked={role === option.value}
-                  onChange={() => setRole(option.value)}
-                  className="sr-only"
-                />
-                {option.label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
+
+
         <label className="auth-field">
           <span className="auth-label">{t.register.password}</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className={inputClass}
-            placeholder="Password"
-          />
-          <p className="auth-help-text">{t.register.passwordHint}</p>
+          <div className="auth-password-field">
+            <input
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={password}
+              onFocus={() => setFocusedField("password")}
+              onBlur={handleFieldBlur("password")}
+              onChange={(event) => setPassword(event.target.value)}
+              className={inputClass}
+              placeholder="Password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((value) => !value)}
+              aria-label={showPassword ? t.register.hidePassword : t.register.showPassword}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          {focusedField === "password" && (
+            <ul className="auth-password-rules" aria-live="polite">
+              {passwordRules.map((rule) => (
+                <li key={rule.label} className={rule.valid ? "is-valid" : "is-invalid"}>
+                  <span aria-hidden="true">{rule.valid ? "✓" : "✗"}</span>
+                  {rule.label}
+                </li>
+              ))}
+            </ul>
+          )}
         </label>
+
+        <label className="auth-field">
+          <span className="auth-label">{t.register.confirmPassword}</span>
+          <div className="auth-password-field">
+            <input
+              type={showConfirmPassword ? "text" : "password"}
+              autoComplete="new-password"
+              value={confirmPassword}
+              onFocus={() => setFocusedField("confirmPassword")}
+              onBlur={handleFieldBlur("confirmPassword")}
+              onChange={(event) => setConfirmPassword(event.target.value)}
+              className={inputClass}
+              placeholder="Confirm password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword((value) => !value)}
+              aria-label={showConfirmPassword ? t.register.hidePassword : t.register.showPassword}
+            >
+              {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+          {focusedField === "confirmPassword" && <p className="auth-help-text">{t.register.tips.confirmPassword}</p>}
+        </label>
+
+        <label className="auth-terms">
+          <input
+            type="checkbox"
+            checked={acceptedTerms}
+            onFocus={() => setFocusedField("terms")}
+            onBlur={handleFieldBlur("terms")}
+            onChange={(event) => setAcceptedTerms(event.target.checked)}
+          />
+          <span>
+            {t.register.acceptTermsPrefix}{" "}
+            <Link href="/terms" className="auth-inline-link">
+              {t.register.termsLink}
+            </Link>{" "}
+            {t.register.acceptTermsMiddle}{" "}
+            <Link href="/privacy" className="auth-inline-link">
+              {t.register.privacyLink}
+            </Link>
+          </span>
+        </label>
+        {focusedField === "terms" && <p className="auth-help-text">{t.register.tips.terms}</p>}
+
         <button type="submit" disabled={loading} className="auth-submit">
           {loading ? t.register.submitting : t.register.submit}
         </button>

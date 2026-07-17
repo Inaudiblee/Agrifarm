@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign Up — AgriFarm",
-  description: "Create a free AgriFarm buyer or seller account.",
+  title: "Register - AgriFarm",
+  description: "Create a free AgriFarm buyer account to discover and order fresh produce from accredited urban gardens in Pasig.",
 };
 
 export default function RegisterLayout({ children }: { children: React.ReactNode }) {

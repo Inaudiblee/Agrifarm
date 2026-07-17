@@ -7,7 +7,7 @@ export const AUTH_LIMITS = {
   passwordMax: 128,
   fullNameMin: 2,
   fullNameMax: 255,
-  phoneMax: 30,
+  phoneMax: 13,
 } as const;
 
 export const EMAIL_REGEX =
@@ -15,7 +15,7 @@ export const EMAIL_REGEX =
 
 export const PASSWORD_STRONG_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,128}$/;
 
-const PHONE_REGEX = /^\+?[0-9][0-9\s-]{6,28}[0-9]$/;
+const PHONE_REGEX = /^09\d{2}\s\d{3}\s\d{4}$/;
 
 export function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
@@ -34,6 +34,14 @@ export function isValidPhone(phone: string) {
   const cleaned = phone.trim();
   if (!cleaned) return true;
   return cleaned.length <= AUTH_LIMITS.phoneMax && PHONE_REGEX.test(cleaned);
+}
+
+export function formatPhilippineMobile(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  const first = digits.slice(0, 4);
+  const second = digits.slice(4, 7);
+  const third = digits.slice(7, 11);
+  return [first, second, third].filter(Boolean).join(" ");
 }
 
 export function getRegisterPasswordIssue(password: string) {

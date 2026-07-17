@@ -1,0 +1,341 @@
+erDiagram
+  %% Agrifarm database ERD generated from apps/api/prisma/schema.prisma
+
+  %% Identity & Access
+  User {
+    String id PK
+  }
+
+  RefreshToken {
+    String id PK
+    String userId FK
+  }
+
+  SellerProfile {
+    String id PK
+    String userId FK,UK
+  }
+
+  Address {
+    String id PK
+    String userId FK
+    String barangayId FK
+  }
+
+  %% Geography & Service Areas
+  Barangay {
+    String id PK
+  }
+
+  StoreServiceArea {
+    String id PK
+    String storeId FK
+    String barangayId FK
+  }
+
+  %% Marketplace Catalog
+  Store {
+    String id PK
+    String sellerProfileId FK
+  }
+
+  Category {
+    String id PK
+    String parentId FK
+  }
+
+  Product {
+    String id PK
+    String storeId FK
+  }
+
+  ProductVariant {
+    String id PK
+    String productId FK
+    String storeId FK
+  }
+
+  ProductCategory {
+    String productId PK,FK
+    String categoryId PK,FK
+  }
+
+  ProductImage {
+    String id PK
+    String productId FK
+  }
+
+  Cart {
+    String id PK
+    String userId FK
+  }
+
+  CartItem {
+    String id PK
+    String cartId FK
+    String variantId FK
+  }
+
+  Review {
+    String id PK
+    String userId FK
+    String productId FK
+  }
+
+  %% Checkout & Orders
+  Order {
+    String id PK
+    String buyerId FK
+    String shippingAddressId FK
+  }
+
+  SellerOrder {
+    String id PK
+    String orderId FK
+    String storeId FK
+  }
+
+  OrderItem {
+    String id PK
+    String orderId FK
+    String sellerOrderId FK
+    String variantId FK
+    String storeId FK
+  }
+
+  Payment {
+    String id PK
+    String orderId FK
+  }
+
+  Fulfillment {
+    String id PK
+    String sellerOrderId FK,UK
+    String riderId FK
+  }
+
+  %% Finance & Operations
+  FinancialTransaction {
+    String id PK
+    String storeId FK
+    String orderId FK
+    String sellerOrderId FK
+  }
+
+  CommissionPlan {
+    String id PK
+  }
+
+  StoreCommission {
+    String id PK
+    String storeId FK
+    String commissionPlanId FK
+  }
+
+  InventoryLedger {
+    String id PK
+    String variantId FK
+    String changedById FK
+  }
+
+  AuditLog {
+    String id PK
+    String actorId FK
+  }
+
+  Notification {
+    String id PK
+    String userId FK
+  }
+
+  %% Urban Agriculture Data
+  AgriculturalDataSource {
+    String id PK
+  }
+
+  UrbanFarmer {
+    String id PK
+    String barangayId FK
+    String sourceId FK
+  }
+
+  FarmingAssociation {
+    String id PK
+    String barangayId FK
+    String sourceId FK
+  }
+
+  FarmingAssociationMember {
+    String associationId PK,FK
+    String farmerId PK,FK
+  }
+
+  FarmingSite {
+    String id PK
+    String barangayId FK
+    String associationId FK
+    String sourceId FK
+  }
+
+  FarmingSiteFarmer {
+    String siteId PK,FK
+    String farmerId PK,FK
+  }
+
+  Crop {
+    String id PK
+    String sourceId FK
+  }
+
+  CultivationRecord {
+    String id PK
+    String siteId FK
+    String cropId FK
+    String farmerId FK
+    String sourceId FK
+  }
+
+  HarvestRecord {
+    String id PK
+    String cultivationId FK
+    String siteId FK
+    String cropId FK
+    String farmerId FK
+    String sourceId FK
+  }
+
+  SeasonalCropCalendar {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String siteId FK
+    String sourceId FK
+  }
+
+  MarketPriceObservation {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String sourceId FK
+  }
+
+  CropAvailabilityObservation {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String siteId FK
+    String sourceId FK
+  }
+
+  SupplyReport {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String sourceId FK
+  }
+
+  AgriculturalSaleRecord {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String siteId FK
+    String farmerId FK
+    String sourceId FK
+  }
+
+  AgriculturalStatistic {
+    String id PK
+    String cropId FK
+    String barangayId FK
+    String siteId FK
+    String sourceId FK
+  }
+
+  %% Localization
+  TranslationOverride {
+    String id PK
+  }
+
+  %% Primary key to foreign key relationships
+  User ||--o{ RefreshToken : "userId"
+  User ||--o| SellerProfile : "userId"
+  SellerProfile ||--o{ Store : "sellerProfileId"
+  Store ||--o{ StoreServiceArea : "storeId"
+  Barangay ||--o{ StoreServiceArea : "barangayId"
+  Category o|--o{ Category : "parentId"
+  Store ||--o{ Product : "storeId"
+  Store ||--o{ ProductVariant : "storeId"
+  Product ||--o{ ProductVariant : "productId_storeId"
+  Product ||--o{ ProductCategory : "productId"
+  Category ||--o{ ProductCategory : "categoryId"
+  Product ||--o{ ProductImage : "productId"
+  User ||--o{ Address : "userId"
+  Barangay o|--o{ Address : "barangayId"
+  User ||--o| Cart : "userId"
+  Cart ||--o{ CartItem : "cartId"
+  ProductVariant ||--o{ CartItem : "variantId"
+  User ||--o{ Order : "buyerId"
+  Address ||--o{ Order : "shippingAddressId_buyerId"
+  Order ||--o{ SellerOrder : "orderId"
+  Store ||--o{ SellerOrder : "storeId"
+  Order ||--o{ OrderItem : "orderId"
+  SellerOrder ||--o{ OrderItem : "sellerOrderId_storeId"
+  ProductVariant ||--o{ OrderItem : "variantId_storeId"
+  Order ||--o{ Payment : "orderId"
+  SellerOrder ||--o| Fulfillment : "sellerOrderId"
+  User o|--o{ Fulfillment : "riderId"
+  Store ||--o{ FinancialTransaction : "storeId"
+  Order o|--o{ FinancialTransaction : "orderId"
+  SellerOrder o|--o{ FinancialTransaction : "sellerOrderId"
+  Store ||--o{ StoreCommission : "storeId"
+  CommissionPlan ||--o{ StoreCommission : "commissionPlanId"
+  ProductVariant ||--o{ InventoryLedger : "variantId"
+  User o|--o{ InventoryLedger : "changedById"
+  User ||--o{ Review : "userId"
+  Product ||--o{ Review : "productId"
+  User o|--o{ AuditLog : "actorId"
+  User ||--o{ Notification : "userId"
+  Barangay ||--o{ UrbanFarmer : "barangayId"
+  AgriculturalDataSource o|--o{ UrbanFarmer : "sourceId"
+  Barangay o|--o{ FarmingAssociation : "barangayId"
+  AgriculturalDataSource o|--o{ FarmingAssociation : "sourceId"
+  FarmingAssociation ||--o{ FarmingAssociationMember : "associationId"
+  UrbanFarmer ||--o{ FarmingAssociationMember : "farmerId"
+  Barangay ||--o{ FarmingSite : "barangayId"
+  FarmingAssociation o|--o{ FarmingSite : "associationId"
+  AgriculturalDataSource o|--o{ FarmingSite : "sourceId"
+  FarmingSite ||--o{ FarmingSiteFarmer : "siteId"
+  UrbanFarmer ||--o{ FarmingSiteFarmer : "farmerId"
+  AgriculturalDataSource o|--o{ Crop : "sourceId"
+  FarmingSite ||--o{ CultivationRecord : "siteId"
+  Crop ||--o{ CultivationRecord : "cropId"
+  UrbanFarmer o|--o{ CultivationRecord : "farmerId"
+  AgriculturalDataSource o|--o{ CultivationRecord : "sourceId"
+  CultivationRecord o|--o{ HarvestRecord : "cultivationId"
+  FarmingSite ||--o{ HarvestRecord : "siteId"
+  Crop ||--o{ HarvestRecord : "cropId"
+  UrbanFarmer o|--o{ HarvestRecord : "farmerId"
+  AgriculturalDataSource o|--o{ HarvestRecord : "sourceId"
+  Crop ||--o{ SeasonalCropCalendar : "cropId"
+  Barangay o|--o{ SeasonalCropCalendar : "barangayId"
+  FarmingSite o|--o{ SeasonalCropCalendar : "siteId"
+  AgriculturalDataSource o|--o{ SeasonalCropCalendar : "sourceId"
+  Crop ||--o{ MarketPriceObservation : "cropId"
+  Barangay o|--o{ MarketPriceObservation : "barangayId"
+  AgriculturalDataSource o|--o{ MarketPriceObservation : "sourceId"
+  Crop ||--o{ CropAvailabilityObservation : "cropId"
+  Barangay o|--o{ CropAvailabilityObservation : "barangayId"
+  FarmingSite o|--o{ CropAvailabilityObservation : "siteId"
+  AgriculturalDataSource o|--o{ CropAvailabilityObservation : "sourceId"
+  Crop ||--o{ SupplyReport : "cropId"
+  Barangay o|--o{ SupplyReport : "barangayId"
+  AgriculturalDataSource o|--o{ SupplyReport : "sourceId"
+  Crop ||--o{ AgriculturalSaleRecord : "cropId"
+  Barangay o|--o{ AgriculturalSaleRecord : "barangayId"
+  FarmingSite o|--o{ AgriculturalSaleRecord : "siteId"
+  UrbanFarmer o|--o{ AgriculturalSaleRecord : "farmerId"
+  AgriculturalDataSource o|--o{ AgriculturalSaleRecord : "sourceId"
+  Crop o|--o{ AgriculturalStatistic : "cropId"
+  Barangay o|--o{ AgriculturalStatistic : "barangayId"
+  FarmingSite o|--o{ AgriculturalStatistic : "siteId"
+  AgriculturalDataSource o|--o{ AgriculturalStatistic : "sourceId"

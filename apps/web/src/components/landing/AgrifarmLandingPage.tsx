@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowDown,
@@ -11,33 +11,37 @@ import {
   Leaf,
   MapPin,
   Moon,
-  Search,
   ShoppingBasket,
   Sprout,
-  Star,
-  Store,
   Sun,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
 import { LanguageSwitch } from "@/components/language-switch";
 import { useLocale } from "@/components/locale-provider";
+import { useTheme } from "@/components/theme-provider";
+import { AccountMenu } from "@/components/account-menu";
+import { CartMenu } from "@/components/cart-menu";
+import { getAuthToken, getAuthUser, type AuthUser } from "@/lib/auth-storage";
+import { getRoleHomeHref, getRoleLabel } from "@/lib/auth-routing";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 const asset = (name: string) => `/assets/agrifarm/${name}`;
+const URBAN_GARDEN_IMAGE = asset("urban-garden.png");
 
 const featureCards = [
   {
     id: "explore-farmers",
-    title: "Explore Farmers",
-    body: "Meet local urban farmers in Pasig.",
-    image: asset("maria-harvest-basket.png"),
+    title: "Explore Urban Gardens",
+    body: "Discover urban gardens across Pasig barangays.",
+    image: URBAN_GARDEN_IMAGE,
     icon: UsersRound,
     href: "/farmers",
   },
   {
     id: "feature-marketplace",
     title: "Fresh Marketplace",
-    body: "Buy fresh, seasonal produce directly from farmers.",
+    body: "Buy fresh, seasonal produce directly from urban gardens.",
     image: asset("marketplace-basket.png"),
     icon: ShoppingBasket,
     href: "/marketplace",
@@ -131,9 +135,8 @@ const seasonalMeals = [
 ];
 
 const stats = [
-  { value: "250+", label: "Local Farmers", image: asset("farmer-watering.png") },
-  { value: "15+", label: "Barangays Connected", image: asset("pasig-map-illustration.png") },
-  { value: "40,000+", label: "Families Served", image: asset("maria-harvest-basket.png") },
+  { value: "3", label: "Urban Gardens", image: URBAN_GARDEN_IMAGE },
+  { value: "3", label: "Barangays Connected", image: asset("pasig-map-illustration.png") },
   { value: "5.2 Tons", label: "Harvested This Month", image: asset("marketplace-basket.png") },
 ];
 
@@ -144,37 +147,38 @@ const landingText = {
     meals: seasonalMeals,
     stats,
     nightStory: {
-      headline: "Every dinner has a story.",
-      body: "As Pasig lights turn on, AgriFarm brings the day's rooftop harvest to warm Filipino meals shared at home.",
-      scroll: "Scroll to discover tonight's table",
-      label: "Tonight's Table",
-      title: "Good evening! Maria is home.",
-      description: "After the harvest, Maria prepares kangkong and talong for a simple rooftop dinner with her family in Barangay Rosario.",
-      button: "Browse Tonight's Meal Ideas",
+      headline: "Every barangay garden has a story.",
+      body: "As Pasig lights turn on, AgriFarm highlights active urban gardens and nearby barangays where residents can discover fresh harvests.",
+      scroll: "Scroll to explore tonight's garden highlights",
+      label: "Tonight's Garden Highlights",
+      title: "Good evening! Explore gardens around Barangay Rosario.",
+      description: "See which barangays have active urban gardens and harvests ready for tonight's meals.",
+      button: "Browse highlighted barangays",
     },
     morningStory: {
-      headline: "Every harvest has a story.",
-      body: "AgriFarm connects urban farmers, buyers, recipes, and smart forecasts for a greener Pasig.",
-      scroll: "Scroll to discover today's harvest",
-      label: "Today's Farmer",
-      title: "Good morning! Meet Maria.",
-      description: "Maria is harvesting fresh kangkong from her rooftop garden in Barangay Rosario.",
-      button: "View Maria's Garden",
+      headline: "Every barangay garden has a story.",
+      body: "AgriFarm highlights urban gardens across Pasig so buyers can discover harvests, explore barangays, and plan a garden visit.",
+      scroll: "Scroll to explore today's garden highlights",
+      label: "Today's Harvest",
+      title: "Good morning!\nPasig grows together.",
+      description: "From rooftops to backyards, urban gardens in every barangay bring fresh food, stronger communities, and a greener Pasig.",
+      button: "Explore Urban Gardens",
     },
     startJourney: "Start the Journey",
     browseMarketplace: "Browse Marketplace",
     browseProduce: "Browse all products",
     marketplaceEyebrow: "Fresh today in Pasig",
     marketplaceTitle: "See what you can buy right now.",
-    marketplaceBody: "A quick buyer preview belongs here: real produce, familiar prices, and the farmer behind each harvest.",
+    marketplaceBody: "A quick buyer preview belongs here: real produce, familiar prices, and the urban garden behind each harvest.",
     mealEyebrow: "Rainy-season meal ideas",
-    mealTitle: "Yes, Filipino food recommendations are worth showing.",
-    mealBody: "Around late June, buyers are thinking about warm, practical ulam. Recipes help them decide what to buy, not just what to browse.",
+    mealTitle: "Best and cheapest options food to cook at your home.",
+    mealBody: "Around late June, buyers are thinking about warm, practical food. Recipes help them decide what to buy, not just what to browse.",
     estimatedCost: "Estimated cook cost",
     bestWith: "Best with:",
     discover: "Discover what's possible with AgriFarm",
     impactTitle: "Growing a better Pasig, together.",
-    impactBody: "Every purchase supports local farmers, stronger communities, and a sustainable future.",
+    impactBody: "Every purchase supports urban gardens, stronger communities, and a sustainable future.",
+    testimonial: "Every buy helps our community grow.",
     join: "Join the Movement",
     closing: {
       day: "The journey of every harvest begins with care.",
@@ -183,8 +187,8 @@ const landingText = {
   },
   fil: {
     features: [
-      { ...featureCards[0], title: "Kilalanin ang mga Magsasaka", body: "Kilalanin ang lokal na urban na magsasaka sa Pasig." },
-      { ...featureCards[1], title: "Sariwang Pamilihan", body: "Bumili ng seasonal produce direkta mula sa magsasaka." },
+      { ...featureCards[0], title: "Tuklasin ang Urban Gardens", body: "Tuklasin ang mga urban garden sa mga barangay ng Pasig." },
+      { ...featureCards[1], title: "Sariwang Pamilihan", body: "Bumili ng seasonal produce direkta mula sa urban gardens." },
       { ...featureCards[2], title: "Masasarap na mga Putahe", body: "Magluto ng healthy meals gamit ang lokal na sangkap." },
       { ...featureCards[3], title: "Matalinong Pagtataya", body: "Magplano gamit ang impormasyon tungkol sa panahon at pagtataya ng demand." },
       { ...featureCards[4], title: "Tuklasin ang Pasig", body: "Humanap ng mga taniman na malapit sa inyo." },
@@ -201,35 +205,34 @@ const landingText = {
       { ...seasonalMeals[2], body: "Comfort food na madaling lutuin para sa simpleng ulam.", serves: "Para sa 3-4 tao" },
     ],
     stats: [
-      { ...stats[0], label: "Lokal na Magsasaka" },
+      { ...stats[0], label: "Urban Gardens" },
       { ...stats[1], label: "Barangay na Konektado" },
-      { ...stats[2], label: "Pamilyang Nasilbihan" },
-      { ...stats[3], label: "Ani Ngayong Buwan" },
+      { ...stats[2], label: "Ani Ngayong Buwan" },
     ],
     nightStory: {
-      headline: "Bawat hapunan ay may kwento.",
-      body: "Habang umiilaw ang Pasig, dinadala ng AgriFarm ang rooftop harvest sa maiinit na pagkaing Pilipino sa bahay.",
-      scroll: "Mag-scroll para makita ang hapunan ngayong gabi",
-      label: "Hapag Ngayong Gabi",
-      title: "Magandang gabi! Nasa bahay na si Maria.",
-      description: "Pagkatapos ng ani, naghahanda si Maria ng kangkong at talong para sa simpleng rooftop dinner kasama ang pamilya sa Barangay Rosario.",
-      button: "Tingnan ang mga magsasaka na malapit sa iyo.",
+      headline: "Bawat garden sa barangay ay may kwento.",
+      body: "Habang umiilaw ang Pasig, itinatampok ng AgriFarm ang mga urban garden at kalapit na barangay kung saan makakakita ng sariwang ani ang mga residente.",
+      scroll: "Mag-scroll para makita ang garden highlights ngayong gabi",
+      label: "Garden Highlights Ngayong Gabi",
+      title: "Magandang gabi! Tuklasin ang mga garden sa paligid ng Barangay Rosario.",
+      description: "Tingnan kung aling mga barangay ang may active urban gardens at mga aning handa para sa hapunan ngayong gabi.",
+      button: "Tingnan ang mga tampok na barangay",
     },
     morningStory: {
-      headline: "Bawat ani ay may kwento.",
-      body: "Kinokonekta ng AgriFarm ang urban na magsasaka, mamimili, putahe, at matalinong pagtataya para sa mas magandang Pasig.",
-      scroll: "Mag-scroll para makita ang ani ngayon",
-      label: "Farmer Ngayon",
-      title: "Magandang umaga! Kilalanin si Maria.",
-      description: "Umaani si Maria ng sariwang kangkong mula sa rooftop garden niya sa Barangay Rosario.",
-      button: "Tingnan ang Garden ni Maria",
+      headline: "Bawat garden sa barangay ay may kwento.",
+      body: "Itinatampok ng AgriFarm ang mga urban garden sa buong Pasig para matuklasan ng mga buyer ang ani, mga barangay, at mga garden na puwedeng bisitahin.",
+      scroll: "Mag-scroll para makita ang garden highlights ngayon",
+      label: "Ani Ngayon",
+      title: "Magandang umaga!\nSabay-sabay lumalago ang Pasig.",
+      description: "Ang mga urban garden sa bawat barangay ay nagdadala ng sariwang pagkain, mas matibay na komunidad, at mas luntiang Pasig.",
+      button: "Tuklasin ang Urban Gardens",
     },
     startJourney: "Simulan ang Paglalakbay",
     browseMarketplace: "Mamili sa Pamilihan",
     browseProduce: "Tingnan lahat ng Ani",
     marketplaceEyebrow: "Sariwa ngayon sa Pasig",
     marketplaceTitle: "Tingnan ang mga maaari mong bilhin ngayon.",
-    marketplaceBody: "Narito ang mabilisang preview para sa mga mamimili—tunay na ani, abot-kayang presyo, at ang mga magsasakang nasa likod ng bawat ani.",
+    marketplaceBody: "Narito ang mabilisang preview para sa mga mamimili—tunay na ani, abot-kayang presyo, at ang urban garden sa likod ng bawat ani.",
     mealEyebrow: "Mga Ideya sa Pagkain para sa Tag-ulan",
     mealTitle: "Mahalagang ipakita ang Filipino food recommendations.",
     mealBody: "Tuwing huling bahagi ng Hunyo, naghahanap ang buyers ng mainit at praktikal na ulam. Tinutulungan sila ng recipes na magdesisyon kung ano ang bibilhin.",
@@ -237,7 +240,8 @@ const landingText = {
     bestWith: "Pinakamainam Gamit ang:",
     discover: "Tuklasin ang posible sa AgriFarm",
     impactTitle: "Sabay nating palaguin ang mas magandang Pasig.",
-    impactBody: "Bawat bili ay sumusuporta sa lokal na magsasaka, mas matibay na komunidad, at sustainable future.",
+    impactBody: "Bawat bili ay sumusuporta sa urban gardens, mas matibay na komunidad, at sustainable future.",
+    testimonial: "Every buy helps our community grow.",
     join: "Sumali sa Paglalakbay",
     closing: {
       day: "Nagsisimula sa malasakit ang paglalakbay ng bawat ani.",
@@ -248,24 +252,32 @@ const landingText = {
 
 export function AgrifarmLandingPage() {
   const { locale, copy: t } = useLocale();
-  const [mode, setMode] = useState<"morning" | "night">("morning");
-  const isNight = mode === "night";
+  const { theme, setTheme } = useTheme();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const isNight = theme === "night";
   const landing = landingText[locale];
 
   const story = isNight
     ? {
-        heroImage: asset("hero-pasig-rooftop-night-meal.png"),
+        heroImage: asset("hero-pasig-rooftop-night-meal2.png"),
         ...landing.nightStory,
-        storyImage: asset("maria-evening-meal-story.png"),
+        storyImage: URBAN_GARDEN_IMAGE,
       }
     : {
-        heroImage: asset("hero-pasig-rooftop-farm-composite.png"),
+        heroImage: asset("hero-pasig-rooftop-farm-composite1.png"),
         ...landing.morningStory,
-        storyImage: asset("maria-rooftop-story.png"),
+        storyImage: URBAN_GARDEN_IMAGE,
       };
+
+  useEffect(() => {
+    const token = getAuthToken();
+    const storedUser = getAuthUser();
+    setUser(token && storedUser ? storedUser : null);
+  }, []);
 
   return (
     <main
+      data-landing-theme={isNight ? "night" : "morning"}
       className={`min-h-screen overflow-hidden transition-colors duration-500 ${
         isNight ? "bg-[#111a15] text-[#fff8e8]" : "bg-[#fff9ec] text-[#17250f]"
       }`}
@@ -277,8 +289,12 @@ export function AgrifarmLandingPage() {
       >
         <nav className="mx-auto flex h-20 w-full max-w-[1500px] items-center justify-between px-5 sm:px-8 lg:px-10">
           <Link href="/" className="flex items-center gap-3" aria-label="AgriFarm home">
-            <span className="grid h-12 w-12 place-items-center rounded-full bg-[#ecf5dc] text-[#19602b] shadow-sm">
-              <Leaf size={34} strokeWidth={2.4} />
+            <span
+              className={`grid h-12 w-12 place-items-center overflow-hidden rounded-full shadow-sm ring-1 ${
+                isNight ? "bg-white/10 ring-white/15" : "bg-[#ecf5dc] ring-[#145c2a]/10"
+              }`}
+            >
+              <img className="h-[88%] w-[76%] object-contain" src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" />
             </span>
             <span className="leading-tight">
               <strong
@@ -295,7 +311,7 @@ export function AgrifarmLandingPage() {
           </Link>
 
           <div
-            className={`hidden items-center gap-8 text-sm font-semibold lg:flex ${
+            className={`hidden items-center gap-5 text-sm font-semibold xl:flex ${
               isNight ? "text-[#f5ead0]" : "text-[#1f2b18]"
             }`}
           >
@@ -316,7 +332,7 @@ export function AgrifarmLandingPage() {
             >
               <button
                 type="button"
-                onClick={() => setMode("morning")}
+                onClick={() => setTheme("day")}
                 className={`grid h-10 w-10 place-items-center rounded-xl transition ${
                   !isNight ? "bg-[#145c2a] text-white shadow-sm" : "text-[#f5ead0] hover:bg-white/10"
                 }`}
@@ -327,7 +343,7 @@ export function AgrifarmLandingPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setMode("night")}
+                onClick={() => setTheme("night")}
                 className={`grid h-10 w-10 place-items-center rounded-xl transition ${
                   isNight ? "bg-[#f6d27a] text-[#182114] shadow-sm" : "text-[#17250f] hover:bg-[#edf5d9]"
                 }`}
@@ -337,29 +353,37 @@ export function AgrifarmLandingPage() {
                 <Moon size={18} />
               </button>
             </div>
-            <button
-              type="button"
-              aria-label="Search"
-              className={`grid h-12 w-12 place-items-center rounded-full shadow-sm ring-1 transition hover:-translate-y-0.5 ${
-                isNight ? "bg-white/12 text-[#fff8e8] ring-white/12" : "bg-white/80 text-[#17250f] ring-black/5"
-              }`}
-            >
-              <Search size={21} />
-            </button>
-            <Link
-              href="/login"
-              className={`hidden h-12 items-center rounded-2xl px-6 text-sm font-bold shadow-sm ring-1 transition hover:-translate-y-0.5 sm:inline-flex ${
-                isNight ? "bg-white/12 text-[#fff8e8] ring-white/12" : "bg-white/80 text-[#17250f] ring-black/5"
-              }`}
-            >
-              {t.nav.login}
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex h-12 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-bold text-white shadow-lg shadow-[#145c2a]/20 transition hover:-translate-y-0.5 sm:px-7"
-            >
-              {t.nav.register}
-            </Link>
+            {user ? (
+              <>
+                <CartMenu compact />
+                <AccountMenu
+                  user={user}
+                  accountLabel={getRoleLabel(user)}
+                  dashboardHref={getRoleHomeHref(user)}
+                  settingsHref="/settings"
+                  dashboardLabel="Profile"
+                  showSettings={false}
+                  compact
+                />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={`hidden h-11 items-center rounded-2xl px-4 text-sm font-bold shadow-sm ring-1 transition hover:-translate-y-0.5 sm:inline-flex ${
+                    isNight ? "bg-white/12 text-[#fff8e8] ring-white/12" : "bg-white/80 text-[#17250f] ring-black/5"
+                  }`}
+                >
+                  {t.nav.login}
+                </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex h-11 items-center rounded-2xl bg-[#145c2a] px-4 text-sm font-bold text-white shadow-lg shadow-[#145c2a]/20 transition hover:-translate-y-0.5"
+                >
+                  {t.nav.register}
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -430,7 +454,7 @@ export function AgrifarmLandingPage() {
             >
               <button
                 type="button"
-                onClick={() => setMode("morning")}
+                onClick={() => setTheme("day")}
                 className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition ${
                   !isNight ? "bg-[#145c2a] text-white shadow-sm" : "text-[#f5ead0] hover:bg-white/10"
                 }`}
@@ -440,7 +464,7 @@ export function AgrifarmLandingPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setMode("night")}
+                onClick={() => setTheme("night")}
                 className={`inline-flex h-10 items-center gap-2 rounded-xl px-4 text-sm font-black transition ${
                   isNight ? "bg-[#f6d27a] text-[#182114] shadow-sm" : "text-[#17250f] hover:bg-[#edf5d9]"
                 }`}
@@ -469,81 +493,74 @@ export function AgrifarmLandingPage() {
 
       <section id="farmers" className="relative z-30 -mt-24 px-5 sm:px-8">
         <div
-          className={`mx-auto grid max-w-[1420px] overflow-hidden rounded-[36px] shadow-2xl ring-1 lg:grid-cols-[1.35fr_0.65fr] ${
+          className={`mx-auto overflow-hidden rounded-[36px] shadow-2xl ring-1 ${
             isNight
-              ? "bg-[#14251d] shadow-black/30 ring-white/10"
-              : "bg-[#f8f0dd] shadow-[#65461b]/15 ring-[#7a5b2f]/10"
+              ? "bg-[#13231b] shadow-black/30 ring-white/10"
+              : "bg-[#fffaf0] shadow-[#65461b]/15 ring-[#7a5b2f]/10"
           }`}
         >
-          <div className="relative min-h-[520px] p-8 sm:p-12 lg:p-16">
-            <div className="absolute inset-0">
-              <img
-                src={story.storyImage}
-                alt=""
-                className={`h-full w-full object-cover ${isNight ? "opacity-72" : "opacity-60"}`}
-              />
+          <div className="grid lg:grid-cols-[0.98fr_1.02fr]">
+            <div className="relative flex items-center">
               <div
                 className={`absolute inset-0 ${
                   isNight
-                    ? "bg-[linear-gradient(90deg,rgba(12,25,19,0.94)_0%,rgba(12,25,19,0.78)_36%,rgba(12,25,19,0.12)_100%)]"
-                    : "bg-[linear-gradient(90deg,#fff7e7_0%,rgba(255,247,231,0.90)_38%,rgba(255,247,231,0.20)_100%)]"
+                    ? "bg-[radial-gradient(circle_at_top_left,rgba(246,210,122,0.10),transparent_32%),linear-gradient(180deg,rgba(255,255,255,0.02),rgba(255,255,255,0))]"
+                    : "bg-[radial-gradient(circle_at_top_left,rgba(255,214,120,0.24),transparent_28%),linear-gradient(180deg,rgba(255,255,255,0.82),rgba(255,250,240,0.94))]"
                 }`}
               />
-            </div>
-            <div className="relative z-10 max-w-md">
-              <span
-                className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-xs font-black uppercase tracking-[0.16em] ${
-                  isNight ? "bg-[#f6d27a]/90 text-[#17250f]" : "bg-white/80 text-[#445725]"
-                }`}
-              >
-                <Sprout size={15} /> {story.label}
-              </span>
-              <h2
-                className={`mt-8 text-4xl font-black leading-tight sm:text-5xl ${
-                  isNight ? "text-[#fff8e8]" : "text-[#1f4d25]"
-                }`}
-              >
-                {story.title}
-              </h2>
-              <p
-                className={`mt-5 text-lg font-medium leading-8 ${
-                  isNight ? "text-[#eadfc3]" : "text-[#2e2b1f]"
-                }`}
-              >
-                {story.description}
-              </p>
-              <Link
-                href={isNight ? "/recipes" : "/farmers"}
-                className="mt-8 inline-flex h-14 items-center gap-3 rounded-2xl bg-[#226b32] px-7 text-sm font-extrabold text-white shadow-lg shadow-[#226b32]/20"
-              >
-                {story.button} <ArrowRight size={18} />
-              </Link>
-            </div>
-            {!isNight ? (
-              <img
-                src={asset("maria-harvest-basket.png")}
-                alt="Maria holding a basket of leafy harvest"
-                className="absolute bottom-0 right-4 hidden w-[48%] max-w-[520px] lg:block"
-              />
-            ) : null}
-          </div>
+              <div className="relative z-10 w-full px-8 py-9 sm:px-10 sm:py-11 lg:px-12 lg:py-12">
+                <span
+                  className={`inline-flex items-center gap-3 rounded-full px-5 py-3 text-xs font-black uppercase tracking-[0.12em] ${
+                    isNight ? "bg-[#f6d27a]/90 text-[#17250f]" : "bg-[#f7ebc7] text-[#365320]"
+                  }`}
+                >
+                  <Sprout size={16} /> {story.label}
+                </span>
+                <h2
+                  className={`mt-8 max-w-[11ch] whitespace-pre-line text-4xl font-black leading-[1.08] sm:text-[3.25rem] lg:text-[3.55rem] ${
+                    isNight ? "text-[#fff8e8]" : "text-[#1d4727]"
+                  }`}
+                >
+                  {story.title}
+                </h2>
+                <p
+                  className={`mt-6 max-w-xl text-base font-medium leading-7 ${
+                    isNight ? "text-[#e4d8bc]" : "text-[#374437]"
+                  }`}
+                >
+                  {story.description}
+                </p>
 
-          <aside className={`flex items-center p-8 sm:p-12 ${isNight ? "bg-[#203525]" : "bg-[#dce7bd]"}`}>
-            <div
-              className={`w-full rounded-[28px] p-8 shadow-xl ring-1 backdrop-blur ${
-                isNight ? "bg-[#fff8e8]/92 shadow-black/25 ring-white/20" : "bg-white/82 shadow-[#6f7a46]/15 ring-white/70"
-              }`}
-            >
-              <InfoRow icon={MapPin} title="Barangay Rosario" body="Pasig City" />
-              <InfoRow icon={Store} title="Rooftop Farmer" body="3 years with AgriFarm" />
-              <div className="flex items-center gap-3 border-t border-[#d8c8a8] pt-6">
-                <Star className="text-[#d6a52e]" fill="currentColor" size={22} />
-                <strong>4.9</strong>
-                <span className="text-sm font-semibold text-[#685d46]">(128 reviews)</span>
+                <div className={`mt-8 grid gap-4 sm:grid-cols-3 ${isNight ? "text-[#f0e5ca]" : "text-[#2f4330]"}`}>
+                  <StoryFeature icon={Leaf} title={locale === "fil" ? "Sariwang ani" : "Freshly harvested"} body={locale === "fil" ? "Mula sa lokal na gardeners" : "by local gardeners"} />
+                  <StoryFeature icon={MapPin} title={locale === "fil" ? "Mula sa iba’t ibang barangay" : "From different barangays"} body={locale === "fil" ? "Mga garden na puwedeng puntahan" : "gardens you can explore"} />
+                  <StoryFeature icon={UsersRound} title={locale === "fil" ? "Para sa mas malusog na pamilyang Pasigueño" : "For healthier Pasig families"} body={locale === "fil" ? "Komunidad na sabay-sabay lumalago" : "communities growing together"} />
+                </div>
+
+                <Link
+                  href="/farmers"
+                  className={`mt-8 inline-flex h-14 items-center gap-3 rounded-2xl px-6 text-sm font-extrabold shadow-lg ${
+                    isNight
+                      ? "bg-[#f0d47e] text-[#173113] shadow-black/20"
+                      : "bg-[#2f6c36] text-white shadow-[#226b32]/20"
+                  }`}
+                >
+                  {story.button} <ArrowRight size={22} />
+                </Link>
               </div>
-              <InfoRow icon={Leaf} title="Specializes in leafy greens" body="Kangkong, pechay, mustasa" />
             </div>
-          </aside>
+
+            <div className="relative min-h-[300px] lg:min-h-[520px]">
+              <img src="/assets/agrifarm/maria-rooftop-story2.png" alt="Urban garden highlights across Pasig" className="h-full w-full object-cover" />
+              <div
+                className={`absolute inset-y-0 left-0 w-28 sm:w-36 lg:w-44 ${
+                  isNight
+                    ? "bg-[linear-gradient(90deg,#13231b_0%,rgba(19,35,27,0.88)_28%,rgba(19,35,27,0)_100%)]"
+                      : "bg-[linear-gradient(90deg,#fffaf0_0%,rgba(255,250,240,0.9)_28%,rgba(255,250,240,0)_100%)]"
+                }`}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -714,6 +731,14 @@ export function AgrifarmLandingPage() {
                 <span className="text-sm font-semibold text-[#3e402d]">{stat.label}</span>
               </div>
             ))}
+            <blockquote
+              className={`flex min-h-[166px] flex-col justify-center rounded-3xl p-5 text-center ring-1 ${
+                isNight ? "bg-[#f6d27a] text-[#17250f] ring-white/15" : "bg-white/45 text-[#1f4d25] ring-white/60"
+              }`}
+            >
+              <span className="text-sm font-black uppercase tracking-[0.14em] text-current/70">Community</span>
+              <strong className="mt-3 block text-2xl font-black leading-tight">"{landing.testimonial}"</strong>
+            </blockquote>
           </div>
         </div>
       </section>
@@ -753,7 +778,7 @@ export function AgrifarmLandingPage() {
   );
 }
 
-function InfoRow({
+function StoryFeature({
   icon: Icon,
   title,
   body,
@@ -763,11 +788,13 @@ function InfoRow({
   body: string;
 }) {
   return (
-    <div className="flex gap-4 border-b border-[#d8c8a8] py-6 first:pt-0 last:border-b-0">
-      <Icon className="mt-1 shrink-0 text-[#246733]" size={27} />
+    <div className="flex flex-col items-start gap-3 border-l border-[#d9d4c6] pl-4 first:border-l-0 first:pl-0">
+      <span className="grid h-12 w-12 place-items-center rounded-full bg-[#f3efdc] text-[#3d7742] ring-1 ring-[#d9d2bc]">
+        <Icon size={24} />
+      </span>
       <div>
-        <strong className="block text-lg font-black text-[#17250f]">{title}</strong>
-        <span className="text-sm font-medium text-[#463f2d]">{body}</span>
+        <strong className="block text-base font-black leading-snug text-current">{title}</strong>
+        <span className="mt-1 block text-sm font-medium leading-5 text-current/80">{body}</span>
       </div>
     </div>
   );

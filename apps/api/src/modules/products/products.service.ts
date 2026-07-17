@@ -101,7 +101,8 @@ export class ProductsService {
   async create(
     user: User,
     input: {
-      storeId: string;
+      storeId?: string;
+      urbanGardenName?: string;
       name: string;
       slug?: string;
       description?: string;
@@ -113,7 +114,13 @@ export class ProductsService {
       imageWillBeUploaded?: boolean;
     }
   ) {
-    await this.storesService.requireOwnedStore(user, input.storeId);
+    const storeId = input.storeId || (input.urbanGardenName
+      ? (await this.storesService.getOrCreateDefaultStoreForGarden(user, input.urbanGardenName)).id
+      : null);
+    if (!storeId) {
+      throw new BadRequestException("Choose an urban garden before listing a product.");
+    }
+    await this.storesService.requireOwnedStore(user, storeId);
     const price = Number(input.price);
     if (!Number.isFinite(price) || price <= 0) {
       throw new BadRequestException("Price must be a positive decimal value.");
@@ -122,7 +129,7 @@ export class ProductsService {
     const created = await this.prisma.$transaction(async (tx) => {
       const product = await tx.product.create({
         data: {
-          storeId: input.storeId,
+          storeId,
           name: input.name,
           slug: input.slug ? slugify(input.slug) : slugify(input.name),
           description: input.description,
@@ -132,13 +139,15 @@ export class ProductsService {
 
       await tx.productVariant.create({
         data: {
-          storeId: input.storeId,
+          storeId,
           productId: product.id,
           name: input.variantName ?? "Regular",
           sku: input.sku,
           unit: input.unit ?? "kg",
           price: price.toFixed(2),
           stockOnHand: input.stockOnHand,
+          totalStock: input.stockOnHand,
+          availableStock: input.stockOnHand,
           inventoryLedger: {
             create: {
               reason: "INITIAL_STOCK",
@@ -154,7 +163,7 @@ export class ProductsService {
         action: AuditAction.CREATE,
         entityType: "Product",
         entityId: product.id,
-        metadata: { storeId: input.storeId, price: price.toFixed(2), stockOnHand: input.stockOnHand },
+        metadata: { storeId, urbanGardenName: input.urbanGardenName, price: price.toFixed(2), stockOnHand: input.stockOnHand },
         client: tx
       });
 
@@ -311,6 +320,8 @@ export class ProductsService {
           unit: input.unit ?? "kg",
           price: price.toFixed(2),
           stockOnHand: input.stockOnHand,
+          totalStock: input.stockOnHand,
+          availableStock: input.stockOnHand,
           inventoryLedger: {
             create: {
               changedById: user.id,
@@ -361,7 +372,7 @@ export class ProductsService {
 
   async adjustStock(user: User, variantId: string, input: { quantityDelta: number; notes?: string }) {
     const variant = await this.requireOwnedVariant(user, variantId);
-    const quantityAfter = variant.stockOnHand + input.quantityDelta;
+    const quantityAfter = variant.availableStock + input.quantityDelta;
     if (quantityAfter < 0) {
       throw new BadRequestException("Stock adjustment cannot make stock negative.");
     }
@@ -369,7 +380,11 @@ export class ProductsService {
     return this.prisma.$transaction(async (tx) => {
       const updated = await tx.productVariant.update({
         where: { id: variant.id },
-        data: { stockOnHand: quantityAfter }
+        data: {
+          stockOnHand: quantityAfter,
+          availableStock: quantityAfter,
+          totalStock: { increment: input.quantityDelta }
+        }
       });
       await tx.inventoryLedger.create({
         data: {

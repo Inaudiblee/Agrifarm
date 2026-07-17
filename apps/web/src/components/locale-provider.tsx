@@ -109,6 +109,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "agrifarm_locale" && (e.newValue === "en" || e.newValue === "fil")) {
+        setLocaleState(e.newValue as Locale);
+        setHasChosenLanguage(true);
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, []);
+
   const internal = useMemo(
     () => ({
       locale,

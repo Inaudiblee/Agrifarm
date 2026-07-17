@@ -197,6 +197,25 @@ async function main() {
     });
   }
 
+  const activationPendingSellers = [
+    { email: "pinagbuhatang@gmail.com", fullName: "Pinagbuhatan Pending Seller" },
+    { email: "rosario@gmail.com", fullName: "Rosario Pending Seller" },
+    { email: "manggahan@gmail.com", fullName: "Manggahan Pending Seller" }
+  ];
+
+  for (const seller of activationPendingSellers) {
+    await prisma.user.upsert({
+      where: { email: seller.email },
+      create: {
+        email: seller.email,
+        passwordHash: passwordHash("password123"),
+        fullName: seller.fullName,
+        role: UserRole.SELLER
+      },
+      update: { role: UserRole.SELLER }
+    });
+  }
+
   console.log(`Seeded ${pasigBarangays.length} Pasig barangays, sample sellers, stores, products, buyer, and admin.`);
   console.log(`Sample buyer/seller password: password123. Checkout payment method example: ${PaymentMethod.CASH_ON_DELIVERY}.`);
 }

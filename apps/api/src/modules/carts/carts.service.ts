@@ -20,7 +20,7 @@ export class CartsService {
           include: {
             variant: {
               include: {
-                product: true,
+                product: { include: { images: { orderBy: [{ isPrimary: "desc" }, { displayOrder: "asc" }] } } },
                 store: { include: { serviceAreas: { include: { barangay: true } } } }
               }
             }

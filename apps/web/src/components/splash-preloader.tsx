@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { copy, type Locale } from "@/lib/i18n";
 import { FarmerHarvestScene } from "./farmer-harvest-scene";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 type Phase = "harvest" | "rise" | "language";
 
@@ -43,7 +44,7 @@ export function SplashPreloader({ onSelect }: SplashPreloaderProps) {
       aria-label={en.choose}
     >
       <div className="splash-logo mb-2 flex items-center gap-2 text-white">
-        <span className="text-4xl">🌾</span>
+        <span className="splash-logo-mark"><img src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" /></span>
         <span className="font-black text-3xl tracking-tight">
           Agri<span className="text-amber-300">Farm</span>
         </span>

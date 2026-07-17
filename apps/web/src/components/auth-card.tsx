@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ArrowLeft, Leaf, Moon, SunMedium } from "lucide-react";
+import { Leaf, Moon, SunMedium } from "lucide-react";
 import { LanguageSwitch } from "./language-switch";
 import { useLocale } from "./locale-provider";
+import { useTheme } from "./theme-provider";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 type AuthCardProps = {
   active: "login" | "register";
@@ -12,15 +14,18 @@ type AuthCardProps = {
   subtitle: string;
   children: React.ReactNode;
   footer: React.ReactNode;
+  afterCard?: React.ReactNode;
 };
 
 const authAsset = (name: string) => `/assets/agrifarm/auth/${name}`;
 
-export function AuthCard({ active, title, subtitle, children, footer }: AuthCardProps) {
+export function AuthCard({ active, title, subtitle, children, footer, afterCard }: AuthCardProps) {
   const { copy } = useLocale();
   const t = copy.authUi;
-  const [mode, setMode] = useState<"morning" | "night">("morning");
-  const isNight = mode === "night";
+  const nav = copy.landing.navLabels;
+  const { theme, setTheme } = useTheme();
+  const isNight = theme === "night";
+  const mode = isNight ? "night" : "morning";
   const signTitle = active === "login" ? t.welcomeBack : t.startGrowing;
   const signBody = active === "login" ? t.loginSignBody : t.registerSignBody;
 
@@ -29,50 +34,61 @@ export function AuthCard({ active, title, subtitle, children, footer }: AuthCard
       <header className="auth-scene-header">
         <Link href="/" className="auth-scene-brand" aria-label="AgriFarm home">
           <span className="auth-scene-brand-mark" aria-hidden="true">
-            <Leaf size={34} />
+            <img src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" />
           </span>
           <span>
             <strong>AgriFarm</strong>
             <small>From our farms, for our future.</small>
           </span>
         </Link>
+        <nav className="auth-scene-nav" aria-label="Primary navigation">
+          <Link href="/marketplace">{nav.marketplace}</Link>
+          <Link href="/farmers">{nav.farmers}</Link>
+          <Link href="/recipes">{nav.recipes}</Link>
+          <Link href="/forecast">{nav.forecast}</Link>
+          <Link href="/pasig">{nav.explorePasig}</Link>
+        </nav>
         <div className="auth-scene-actions">
           <LanguageSwitch compact />
           <button
             type="button"
             className="auth-mode-toggle"
-            onClick={() => setMode(isNight ? "morning" : "night")}
+            onClick={() => setTheme(isNight ? "day" : "night")}
             aria-label={isNight ? "Switch to morning mode" : "Switch to night mode"}
             aria-pressed={isNight}
           >
             {isNight ? <Moon size={18} /> : <SunMedium size={18} />}
           </button>
-          <Link href="/" className="auth-back-link">
-            <ArrowLeft size={17} />
-            {t.backHome}
+          <Link href="/login" className={`auth-top-link${active === "login" ? " is-active" : ""}`}>
+            {copy.nav.login}
+          </Link>
+          <Link href="/register" className={`auth-top-link primary${active === "register" ? " is-active" : ""}`}>
+            {copy.nav.register}
           </Link>
         </div>
       </header>
 
       <div className="auth-mobile-actions" aria-label="Authentication page actions">
+        <Link href="/login" className={`auth-top-link${active === "login" ? " is-active" : ""}`}>
+          {copy.nav.login}
+        </Link>
+        <Link href="/register" className={`auth-top-link primary${active === "register" ? " is-active" : ""}`}>
+          {copy.nav.register}
+        </Link>
         <LanguageSwitch compact />
         <button
           type="button"
           className="auth-mode-toggle"
-          onClick={() => setMode(isNight ? "morning" : "night")}
+          onClick={() => setTheme(isNight ? "day" : "night")}
           aria-label={isNight ? "Switch to morning mode" : "Switch to night mode"}
           aria-pressed={isNight}
         >
           {isNight ? <Moon size={18} /> : <SunMedium size={18} />}
         </button>
-        <Link href="/" className="auth-back-link">
-          <ArrowLeft size={17} />
-          {t.backHome}
-        </Link>
       </div>
 
       <main className="auth-layout">
-        <aside className="auth-visual-panel" aria-label="AgriFarm rooftop garden story">
+        <aside className="auth-visual-panel" aria-label="AgriFarm urban garden highlights">
           <div className="auth-visual-shade" aria-hidden="true" />
           <img
             className="auth-hanging-planter"
@@ -113,7 +129,7 @@ export function AuthCard({ active, title, subtitle, children, footer }: AuthCard
             <section className="auth-card" aria-labelledby={`${active}-title`}>
               <div className="auth-card-header">
                 <span className="auth-card-mark" aria-hidden="true">
-                  <Leaf size={28} />
+                  <img src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" />
                 </span>
                 <p className="auth-eyebrow">AgriFarm</p>
                 <h1 id={`${active}-title`} className="auth-title">
@@ -141,6 +157,7 @@ export function AuthCard({ active, title, subtitle, children, footer }: AuthCard
               </div>
               <p className="auth-footer-text">{footer}</p>
             </section>
+            {afterCard}
 
             <div className="auth-benefit-strip">
               <div className="auth-benefit">

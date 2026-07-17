@@ -1,23 +1,31 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  ArrowLeft,
   ArrowRight,
   BarChart3,
   ChefHat,
-  Leaf,
   MapPin,
+  Moon,
   Search,
   ShieldCheck,
   ShoppingBasket,
-  Sprout,
+  ShoppingCart,
+  Sun,
   UsersRound,
+  X,
 } from "lucide-react";
 import { LanguageSwitch } from "@/components/language-switch";
 import { useLocale } from "@/components/locale-provider";
-import { getApiBase, resolveMediaUrl } from "@/lib/api";
+import { useTheme } from "@/components/theme-provider";
+import { getApiBase, parseApiError, resolveMediaUrl } from "@/lib/api";
+import { AccountMenu } from "@/components/account-menu";
+import { CartMenu } from "@/components/cart-menu";
+import { getAuthToken, getAuthUser, type AuthUser } from "@/lib/auth-storage";
+import { getRoleHomeHref, getRoleLabel } from "@/lib/auth-routing";
+import { AGRIFARM_LOGO_SRC } from "@/lib/brand-assets";
 
 const asset = (name: string) => `/assets/agrifarm/${name}`;
 
@@ -26,7 +34,7 @@ type Product = {
   name: string;
   description?: string | null;
   store?: { name?: string | null; slug?: string | null } | null;
-  variants?: Array<{ price: string | number; unit?: string | null; stockOnHand?: number | null }>;
+  variants?: Array<{ id: string; price: string | number; unit?: string | null; stockOnHand?: number | null }>;
   images?: Array<{ url: string; altText?: string | null; isPrimary?: boolean | null }>;
 };
 
@@ -60,9 +68,8 @@ type SampleFarmer = {
 const copy = {
   en: {
     nav: {
-      back: "Back to Home",
       marketplace: "Marketplace",
-      farmers: "Farmers",
+      farmers: "Urban Gardens",
       recipes: "Recipes",
       forecast: "Forecast",
       pasig: "Explore Pasig",
@@ -81,18 +88,18 @@ const copy = {
       sampleTitle: "Seasonal buyer picks",
     },
     farmers: {
-      eyebrow: "Urban farmers",
-      title: "Meet the growers behind every harvest.",
-      body: "Explore rooftop gardens, barangay service areas, and trusted seller profiles as a guest.",
-      empty: "No active farmer stores yet. Featured community examples are shown below.",
-      verified: "Verified farmer",
+      eyebrow: "Urban garden highlights",
+      title: "See the barangay gardens you can explore in Pasig.",
+      body: "Browse highlighted urban gardens, discover their barangays, and preview harvests before you log in.",
+      empty: "No active urban garden highlights yet. Featured community examples are shown below.",
+      verified: "Verified garden",
       products: "products",
-      area: "Service area",
-      cta: "View marketplace",
+      area: "Visit in",
+      cta: "Browse harvests",
     },
     recipes: {
       eyebrow: "Delicious Filipino food",
-      title: "Plan meals from what Pasig farmers can harvest.",
+      title: "Plan meals from what Pasig urban gardens can harvest.",
       body: "Use recipe ideas to decide what to buy, with estimated cooking cost for family meals.",
       cost: "Estimated cook cost",
       bestWith: "Best with",
@@ -110,18 +117,17 @@ const copy = {
       eyebrow: "Explore Pasig",
       title: "Find the barangays where AgriFarm can grow.",
       body: "Start with a friendly map view of farms, delivery routes, and community food points.",
-      cta: "Meet farmers",
-      farmers: "farmers in this barangay",
+      cta: "See urban gardens",
+      farmers: "urban gardens in this barangay",
       selected: "Selected barangay",
-      hint: "Tap a pin to see how many farmers are connected there.",
+      hint: "Tap a pin to see how many urban gardens are connected there.",
       fallback: "Sample community count",
     },
   },
   fil: {
     nav: {
-      back: "Bumalik sa Home",
       marketplace: "Pamilihan",
-      farmers: "Magsasaka",
+      farmers: "Urban Gardens",
       recipes: "Mga Putahe",
       forecast: "Pagtataya",
       pasig: "Tuklasin ang Pasig",
@@ -140,18 +146,18 @@ const copy = {
       sampleTitle: "Seasonal picks para sa mamimili",
     },
     farmers: {
-      eyebrow: "Urban na magsasaka",
-      title: "Kilalanin ang growers sa likod ng bawat ani.",
-      body: "Tingnan ang rooftop gardens, barangay service areas, at trusted seller profiles kahit guest.",
-      empty: "Wala pang active farmer stores. Ipinapakita muna ang featured community examples.",
-      verified: "Verified farmer",
+      eyebrow: "Mga tampok na urban garden",
+      title: "Tingnan ang mga garden sa barangay na puwede ninyong tuklasin sa Pasig.",
+      body: "I-browse ang mga tampok na urban garden, tuklasin ang kanilang barangay, at silipin ang ani bago mag log in.",
+      empty: "Wala pang active urban garden highlights. Ipinapakita muna ang featured community examples.",
+      verified: "Verified garden",
       products: "produkto",
-      area: "Service area",
-      cta: "Tingnan ang pamilihan",
+      area: "Bisitahin sa",
+      cta: "Tingnan ang ani",
     },
     recipes: {
       eyebrow: "Masasarap na pagkaing Pilipino",
-      title: "Magplano ng ulam mula sa ani ng Pasig farmers.",
+      title: "Magplano ng ulam mula sa ani ng urban gardens sa Pasig.",
       body: "Gamitin ang recipe ideas para malaman kung ano ang bibilhin, kasama ang tinatayang gastos sa pagluluto.",
       cost: "Tinatayang gastos sa pagluluto",
       bestWith: "Pinakamainam gamit ang",
@@ -169,10 +175,10 @@ const copy = {
       eyebrow: "Tuklasin ang Pasig",
       title: "Hanapin ang barangays kung saan pwedeng lumago ang AgriFarm.",
       body: "Magsimula sa friendly map view ng farms, delivery routes, at community food points.",
-      cta: "Kilalanin ang farmers",
-      farmers: "magsasaka sa barangay na ito",
+      cta: "Tingnan ang urban gardens",
+      farmers: "urban gardens sa barangay na ito",
       selected: "Napiling barangay",
-      hint: "Pindutin ang pin para makita kung ilang farmers ang konektado roon.",
+      hint: "Pindutin ang pin para makita kung ilang urban gardens ang konektado roon.",
       fallback: "Sample community count",
     },
   },
@@ -219,21 +225,21 @@ const sampleFarmers: SampleFarmer[] = [
     name: "Maria's Garden",
     barangay: "Barangay Rosario",
     products: 12,
-    image: asset("maria-harvest-basket.png"),
+    image: asset("maria-rooftop-story2.png"),
   },
   {
     id: "rooftop",
     name: "Rooftop Greens PH",
     barangay: "Barangay Kapitolyo",
     products: 9,
-    image: asset("farmer-watering.png"),
+    image: asset("maria-rooftop-story2.png"),
   },
   {
     id: "pasig",
     name: "Pasig Urban Farm",
     barangay: "Barangay Caniogan",
     products: 15,
-    image: asset("hero-pasig-rooftop-farm.png"),
+    image: asset("maria-rooftop-story2.png"),
   },
 ];
 
@@ -340,22 +346,42 @@ function usePublicData<T>(path: string) {
 
 function Shell({ children }: { children: ReactNode }) {
   const { locale } = useLocale();
+  const { theme, setTheme } = useTheme();
+  const [user, setUser] = useState<AuthUser | null>(null);
   const t = copy[locale];
+  const isNight = theme === "night";
+
+  useEffect(() => {
+    const token = getAuthToken();
+    const storedUser = getAuthUser();
+    setUser(token && storedUser ? storedUser : null);
+  }, []);
 
   return (
-    <main className="min-h-screen bg-[#fff9ec] text-[#17250f]">
-      <header className="sticky top-0 z-40 border-b border-[#eadfca] bg-[#fff9ec]/88 backdrop-blur-xl">
-        <nav className="mx-auto flex h-20 max-w-[1320px] items-center justify-between px-5 sm:px-8">
+    <main
+      data-public-theme={isNight ? "night" : "morning"}
+      className={`public-discovery-shell min-h-screen transition-colors duration-500 ${isNight ? "bg-[#111a15] text-[#fff8e8]" : "bg-[#fff9ec] text-[#17250f]"}`}
+    >
+      <header
+        className={`sticky top-0 z-40 border-b backdrop-blur-xl transition-colors duration-500 ${
+          isNight ? "border-white/10 bg-[#101914]/88" : "border-[#eadfca] bg-[#fff9ec]/88"
+        }`}
+      >
+        <nav className="mx-auto flex h-20 max-w-[1320px] items-center justify-between gap-4 px-5 sm:px-8">
           <Link href="/" className="flex items-center gap-3" aria-label="AgriFarm home">
-            <span className="grid h-12 w-12 place-items-center rounded-full bg-[#ecf5dc] text-[#19602b] shadow-sm">
-              <Leaf size={32} strokeWidth={2.4} />
+            <span
+              className={`grid h-12 w-12 place-items-center overflow-hidden rounded-full shadow-sm ring-1 ${
+                isNight ? "bg-white/10 ring-white/15" : "bg-[#ecf5dc] ring-[#145c2a]/10"
+              }`}
+            >
+              <img className="h-[88%] w-[76%] object-contain" src={AGRIFARM_LOGO_SRC} alt="" aria-hidden="true" />
             </span>
             <span className="leading-tight">
-              <strong className="block text-2xl font-black text-[#0d5426]">AgriFarm</strong>
-              <small className="hidden text-xs font-bold text-[#33452a] sm:block">From our farms, for our future.</small>
+              <strong className={`block text-2xl font-black ${isNight ? "text-[#f7f0d7]" : "text-[#0d5426]"}`}>AgriFarm</strong>
+              <small className={`hidden text-xs font-bold sm:block ${isNight ? "text-[#d7c99d]" : "text-[#33452a]"}`}>From our farms, for our future.</small>
             </span>
           </Link>
-          <div className="hidden items-center gap-7 text-sm font-bold lg:flex">
+          <div className={`hidden items-center gap-7 text-sm font-bold lg:flex ${isNight ? "text-[#f5ead0]" : "text-[#1f2b18]"}`}>
             <Link href="/marketplace">{t.nav.marketplace}</Link>
             <Link href="/farmers">{t.nav.farmers}</Link>
             <Link href="/recipes">{t.nav.recipes}</Link>
@@ -364,15 +390,45 @@ function Shell({ children }: { children: ReactNode }) {
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
             <LanguageSwitch compact />
-            <Link href="/" className="hidden h-11 items-center gap-2 rounded-2xl bg-white/80 px-4 text-sm font-black ring-1 ring-black/5 sm:inline-flex">
-              <ArrowLeft size={16} /> {t.nav.back}
-            </Link>
-            <Link href="/login" className="hidden h-11 items-center rounded-2xl bg-white/80 px-5 text-sm font-black ring-1 ring-black/5 md:inline-flex">
-              {t.nav.login}
-            </Link>
-            <Link href="/register" className="inline-flex h-11 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white shadow-lg shadow-[#145c2a]/20">
-              {t.nav.register}
-            </Link>
+            <button
+              type="button"
+              onClick={() => setTheme(isNight ? "day" : "night")}
+              className={`grid h-11 w-11 place-items-center rounded-2xl text-sm font-black ring-1 transition ${
+                isNight ? "bg-[#f6d27a] text-[#182114] ring-[#f6d27a]/35" : "bg-white/80 text-[#17250f] ring-black/5 hover:bg-[#edf5d9]"
+              }`}
+              aria-label={isNight ? "Switch to morning mode" : "Switch to night mode"}
+              aria-pressed={isNight}
+            >
+              {isNight ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+            {user ? (
+              <>
+                <CartMenu compact />
+                <AccountMenu
+                  user={user}
+                  accountLabel={getRoleLabel(user)}
+                  dashboardHref={getRoleHomeHref(user)}
+                  settingsHref="/settings"
+                  dashboardLabel="Profile"
+                  showSettings={false}
+                  compact
+                />
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className={`hidden h-11 items-center rounded-2xl px-5 text-sm font-black ring-1 md:inline-flex ${
+                    isNight ? "bg-white/12 text-[#fff8e8] ring-white/12" : "bg-white/80 text-[#17250f] ring-black/5"
+                  }`}
+                >
+                  {t.nav.login}
+                </Link>
+                <Link href="/register" className="inline-flex h-11 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white shadow-lg shadow-[#145c2a]/20">
+                  {t.nav.register}
+                </Link>
+              </>
+            )}
           </div>
         </nav>
       </header>
@@ -381,38 +437,59 @@ function Shell({ children }: { children: ReactNode }) {
   );
 }
 
-function Hero({
+function PageHeader({
   eyebrow,
   title,
   body,
-  image,
   icon,
+  actions,
 }: {
   eyebrow: string;
   title: string;
   body: string;
-  image: string;
   icon: ReactNode;
+  actions?: ReactNode;
 }) {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_16%_18%,rgba(255,221,151,0.72),transparent_28%),linear-gradient(180deg,#fff9ec_0%,#f4edd8_100%)]" />
-      <div className="relative mx-auto grid max-w-[1320px] items-center gap-10 px-5 py-12 sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:py-16">
-        <div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-white/78 px-4 py-2 text-xs font-black uppercase tracking-[0.16em] text-[#365320] shadow-sm ring-1 ring-[#7d6033]/10">
-            {icon} {eyebrow}
-          </span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-black leading-tight tracking-tight text-[#143b18] sm:text-6xl">
-            {title}
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-[#3a3729]">{body}</p>
-        </div>
-        <div className="relative min-h-[280px] overflow-hidden rounded-[34px] bg-[#edf0d8] shadow-2xl shadow-[#604117]/14 ring-1 ring-[#7d6033]/12 lg:min-h-[390px]">
-          <img src={image} alt="" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(255,249,236,0.28),rgba(255,249,236,0)_55%)]" />
-        </div>
+    <section className="public-page-header mx-auto grid max-w-[1320px] gap-5 px-5 py-8 sm:px-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+      <div>
+        <span className="public-eyebrow inline-flex items-center gap-2 rounded-full bg-white/70 px-3 py-2 text-xs font-black uppercase tracking-[0.14em] text-[#365320] ring-1 ring-[#7d6033]/10">
+          {icon} {eyebrow}
+        </span>
+        <h1 className="public-title mt-4 max-w-4xl text-3xl font-black leading-tight text-[#143b18] sm:text-4xl">{title}</h1>
+        <p className="public-subtitle mt-3 max-w-3xl text-base font-semibold leading-7 text-[#4a4635]">{body}</p>
       </div>
+      {actions ? <div className="flex flex-wrap items-center gap-3 lg:justify-end">{actions}</div> : null}
     </section>
+  );
+}
+
+function SearchBox({ value, onChange, placeholder }: { value: string; onChange: (value: string) => void; placeholder: string }) {
+  return (
+    <label className="public-search flex min-h-12 min-w-[min(100%,320px)] flex-1 items-center gap-3 rounded-2xl bg-white px-4 shadow-sm ring-1 ring-[#7d6033]/12">
+      <Search size={19} className="public-search-icon text-[#246733]" />
+      <input
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="public-search-input h-11 min-w-0 flex-1 bg-transparent text-sm font-bold text-[#17250f] outline-none placeholder:text-[#786d57]"
+      />
+    </label>
+  );
+}
+
+function FilterChip({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`public-filter-chip min-h-10 rounded-full px-4 text-sm font-black ring-1 transition ${
+        active ? "bg-[#145c2a] text-white ring-[#145c2a]" : "bg-white/76 text-[#29471a] ring-[#7d6033]/12 hover:bg-[#edf5d9]"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -435,61 +512,190 @@ function isStoreRecord(store: StoreRecord | SampleFarmer): store is StoreRecord 
   return "slug" in store;
 }
 
+const BUY_NOW_STORAGE_KEY = "agrifarm_buy_now_checkout";
+
 export function MarketplacePage() {
+  const router = useRouter();
   const { locale } = useLocale();
   const t = copy[locale].marketplace;
   const { data: products, loading } = usePublicData<Product>("/api/products");
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [token, setToken] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const visibleProducts = useMemo(
-    () =>
-      products.filter((product) =>
-        `${product.name} ${product.description ?? ""} ${product.store?.name ?? ""}`.toLowerCase().includes(query.toLowerCase())
-      ),
-    [products, query]
-  );
+  const [filter, setFilter] = useState("all");
+  const [busyVariant, setBusyVariant] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [purchase, setPurchase] = useState<{
+    product: Product;
+    variant: NonNullable<Product["variants"]>[number];
+    intent: "cart" | "buy";
+  } | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const sourceProducts: Array<Product | SampleProduct> = products.length ? products : samples;
+  const visibleProducts = useMemo(() => {
+    const needle = query.toLowerCase();
+    return sourceProducts.filter((product) => {
+      const isLive = isProduct(product);
+      const haystack = `${product.name} ${isLive ? product.description ?? "" : ""} ${isLive ? product.store?.name ?? "" : product.store}`.toLowerCase();
+      const matchesQuery = haystack.includes(needle);
+      const matchesFilter =
+        filter === "all" ||
+        product.name.toLowerCase().includes(filter) ||
+        (isLive ? product.description?.toLowerCase().includes(filter) : product.store.toLowerCase().includes(filter));
+      return matchesQuery && matchesFilter;
+    });
+  }, [filter, query, sourceProducts]);
+
+  useEffect(() => {
+    const storedToken = getAuthToken();
+    const storedUser = getAuthUser();
+    setToken(storedToken);
+    setUser(storedToken && storedUser ? storedUser : null);
+  }, []);
+
+  function openPurchaseModal(product: Product, variant: NonNullable<Product["variants"]>[number], intent: "cart" | "buy") {
+    setQuantity(1);
+    setNotice(null);
+    setPurchase({ product, variant, intent });
+  }
+
+  async function addToCart(productName: string, variantId: string, nextQuantity: number, redirectTo?: string) {
+    if (!token) return;
+    setBusyVariant(variantId);
+    setNotice(null);
+    try {
+      const response = await fetch(`${getApiBase()}/api/cart/items`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ variantId, quantity: nextQuantity }),
+      });
+      if (!response.ok) throw new Error(await parseApiError(response));
+      setNotice(`${productName} added to cart.`);
+      window.dispatchEvent(new Event("agrifarm-cart-updated"));
+      setPurchase(null);
+      if (redirectTo) router.push(redirectTo);
+    } catch (caught) {
+      setNotice(caught instanceof Error ? caught.message : "Unable to add item to cart.");
+    } finally {
+      setBusyVariant(null);
+    }
+  }
+
+  function buyNowDirect() {
+    if (!purchase) return;
+    const image = productImage(purchase.product);
+    sessionStorage.setItem(
+      BUY_NOW_STORAGE_KEY,
+      JSON.stringify({
+        id: `buy-now-${purchase.variant.id}`,
+        quantity,
+        variant: {
+          id: purchase.variant.id,
+          name: purchase.variant.unit ?? "Default",
+          price: purchase.variant.price,
+          product: {
+            name: purchase.product.name,
+            images: [{ url: image, altText: purchase.product.name, isPrimary: true }],
+          },
+          store: { name: purchase.product.store?.name ?? t.fallbackStore },
+        },
+      })
+    );
+    setPurchase(null);
+    router.push("/buyer/checkout?mode=buy-now");
+  }
 
   return (
     <Shell>
-      <Hero
+      <PageHeader
         eyebrow={t.eyebrow}
         title={t.title}
         body={t.body}
-        image={asset("hero-pasig-rooftop-farm-composite.png")}
         icon={<ShoppingBasket size={15} />}
+        actions={
+          <>
+            <span className="public-count-pill rounded-full bg-white/70 px-4 py-2 text-sm font-black text-[#365320] ring-1 ring-[#7d6033]/10">
+              {visibleProducts.length} products
+            </span>
+            {user ? (
+              <Link href="/buyer/wishlist" className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">
+                <ShoppingCart size={16} /> View cart
+              </Link>
+            ) : (
+              <Link href="/login" className="inline-flex min-h-11 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">
+                {t.cta}
+              </Link>
+            )}
+          </>
+        }
       />
       <section className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8">
-        <div className="-mt-4 mb-8 flex max-w-xl items-center gap-3 rounded-3xl bg-white px-5 py-4 shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/12">
-          <Search size={20} className="text-[#246733]" />
-          <input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={t.search}
-            className="h-10 flex-1 bg-transparent text-base font-semibold outline-none placeholder:text-[#786d57]"
-          />
+        <div className="public-toolbar mb-6 rounded-[24px] bg-[#fffdf7] p-4 shadow-lg shadow-[#604117]/8 ring-1 ring-[#7d6033]/12">
+          <div className="flex flex-wrap items-center gap-3">
+            <SearchBox value={query} onChange={setQuery} placeholder={t.search} />
+            <FilterChip active={filter === "all"} onClick={() => setFilter("all")}>All</FilterChip>
+            <FilterChip active={filter === "pechay"} onClick={() => setFilter("pechay")}>Pechay</FilterChip>
+            <FilterChip active={filter === "talong"} onClick={() => setFilter("talong")}>Talong</FilterChip>
+            <FilterChip active={filter === "bundle"} onClick={() => setFilter("bundle")}>Bundles</FilterChip>
+          </div>
         </div>
         {!loading && products.length === 0 ? <p className="mb-5 font-bold text-[#5b513d]">{t.empty}</p> : null}
+        {notice ? <p className="public-cart-notice mb-5 rounded-2xl bg-[#edf5d9] px-4 py-3 text-sm font-black text-[#1f4d25] ring-1 ring-[#145c2a]/10">{notice}</p> : null}
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {(products.length ? visibleProducts : samples).map((item) => {
+          {visibleProducts.map((item) => {
             const isLive = isProduct(item);
             const variant = isLive ? item.variants?.[0] : undefined;
             const price = isLive ? money(variant?.price) : item.price;
             const unit = isLive ? variant?.unit ?? t.fallbackUnit : item.unit;
             const storeName = isLive ? item.store?.name ?? t.fallbackStore : item.store;
+            const outOfStock = Number(variant?.stockOnHand ?? 0) <= 0;
             return (
-              <article key={item.id} className="overflow-hidden rounded-3xl bg-[#fffdf7] shadow-lg shadow-[#604117]/8 ring-1 ring-[#7d6033]/14">
-                <div className="h-48 bg-[#f3ead3]">
+              <article key={item.id} className="public-card overflow-hidden rounded-3xl bg-[#fffdf7] shadow-lg shadow-[#604117]/8 ring-1 ring-[#7d6033]/14">
+                <div className="public-card-media h-48 bg-[#f3ead3]">
                   <img src={isLive ? productImage(item) : item.image} alt="" className="h-full w-full object-contain p-5" />
                 </div>
                 <div className="p-5">
-                  <h2 className="text-xl font-black text-[#17250f]">{item.name}</h2>
-                  <p className="mt-1 text-sm font-bold text-[#5a513d]">{storeName}</p>
-                  <div className="mt-5 flex items-center justify-between gap-3">
-                    <strong className="rounded-2xl bg-[#edf5d9] px-4 py-2 text-sm font-black text-[#1f4d25]">
+                  <h2 className="public-card-title text-xl font-black text-[#17250f]">{item.name}</h2>
+                  <p className="public-card-meta mt-1 text-sm font-bold text-[#5a513d]">{storeName}</p>
+                  <div className="mt-5 grid gap-3">
+                    <strong className="public-price-pill rounded-2xl bg-[#edf5d9] px-4 py-2 text-sm font-black text-[#1f4d25]">
                       {price} / {unit}
                     </strong>
-                    <Link href="/login" className="inline-flex h-11 items-center rounded-2xl bg-[#145c2a] px-4 text-sm font-black text-white">
-                      {t.cta}
-                    </Link>
+                    {user && isLive && variant?.id ? (
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          disabled={busyVariant === variant.id || outOfStock}
+                          onClick={() => openPurchaseModal(item, variant, "cart")}
+                          className="inline-flex h-11 items-center justify-center rounded-2xl bg-[#145c2a] px-3 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-55"
+                        >
+                          Add to cart
+                        </button>
+                        <button
+                          type="button"
+                          disabled={busyVariant === variant.id || outOfStock}
+                          onClick={() => openPurchaseModal(item, variant, "buy")}
+                          className="inline-flex h-11 items-center justify-center rounded-2xl bg-[#f6d27a] px-3 text-sm font-black text-[#17250f] disabled:cursor-not-allowed disabled:opacity-55"
+                        >
+                          Reserve now
+                        </button>
+                      </div>
+                    ) : user ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="inline-flex h-11 cursor-not-allowed items-center rounded-2xl bg-[#145c2a] px-4 text-sm font-black text-white opacity-55"
+                      >
+                        Sample only
+                      </button>
+                    ) : (
+                      <Link href="/login" className="inline-flex h-11 items-center rounded-2xl bg-[#145c2a] px-4 text-sm font-black text-white">
+                        {t.cta}
+                      </Link>
+                    )}
                   </div>
                 </div>
               </article>
@@ -497,6 +703,54 @@ export function MarketplacePage() {
           })}
         </div>
       </section>
+      {purchase ? (
+        <div className="marketplace-buy-modal" role="dialog" aria-modal="true" aria-label={`${purchase.product.name} quantity`}>
+          <button className="marketplace-buy-backdrop" type="button" onClick={() => setPurchase(null)} aria-label="Close product modal" />
+          <div className="marketplace-buy-panel">
+            <button className="marketplace-buy-close" type="button" onClick={() => setPurchase(null)} aria-label="Close product window">
+              <X size={19} />
+            </button>
+            <img src={productImage(purchase.product)} alt={purchase.product.name} />
+            <div className="marketplace-buy-copy">
+              <span>{purchase.intent === "buy" ? "Reserve for pickup" : "Add to your cart"}</span>
+              <h2>{purchase.product.name}</h2>
+              <p>{money(purchase.variant.price)} per {purchase.variant.unit ?? t.fallbackUnit}</p>
+              <dl>
+                <div><dt>Available after selection</dt><dd>{Math.max(0, Number(purchase.variant.stockOnHand ?? 0) - quantity)}</dd></div>
+                <div><dt>Your quantity</dt><dd>{quantity} {purchase.variant.unit ?? "bundle"}{quantity === 1 ? "" : "s"}</dd></div>
+                <div><dt>Order total</dt><dd>{money(Number(purchase.variant.price) * quantity)}</dd></div>
+              </dl>
+              <div className="marketplace-buy-stepper">
+                <button type="button" onClick={() => setQuantity((current) => Math.max(1, current - 1))} aria-label="Decrease quantity">-</button>
+                <strong>{quantity}</strong>
+                <button
+                  type="button"
+                  onClick={() => setQuantity((current) => Math.min(Number(purchase.variant.stockOnHand ?? 1), current + 1))}
+                  aria-label="Increase quantity"
+                >
+                  +
+                </button>
+              </div>
+              <div className={`marketplace-buy-actions is-${purchase.intent}`}>
+                <button
+                  type="button"
+                  disabled={busyVariant === purchase.variant.id}
+                  onClick={() => void addToCart(purchase.product.name, purchase.variant.id, quantity, "/buyer/wishlist")}
+                >
+                  Add to cart
+                </button>
+                <button
+                  type="button"
+                  disabled={busyVariant === purchase.variant.id}
+                  onClick={buyNowDirect}
+                >
+                  Reserve now
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Shell>
   );
 }
@@ -505,26 +759,53 @@ export function FarmersPage() {
   const { locale } = useLocale();
   const t = copy[locale].farmers;
   const { data: stores, loading } = usePublicData<StoreRecord>("/api/stores");
+  const [query, setQuery] = useState("");
+  const [areaFilter, setAreaFilter] = useState("all");
+  const sourceStores: Array<StoreRecord | SampleFarmer> = stores.length ? stores : sampleFarmers;
+  const visibleStores = useMemo(() => {
+    const needle = query.toLowerCase();
+    return sourceStores.filter((store) => {
+      const isLive = isStoreRecord(store);
+      const area = isLive ? store.serviceAreas?.[0]?.barangay?.name ?? "Pasig City" : store.barangay;
+      const haystack = `${store.name} ${area}`.toLowerCase();
+      const matchesQuery = haystack.includes(needle);
+      const matchesArea = areaFilter === "all" || area.toLowerCase().includes(areaFilter);
+      return matchesQuery && matchesArea;
+    });
+  }, [areaFilter, query, sourceStores]);
 
   return (
     <Shell>
-      <Hero
+      <PageHeader
         eyebrow={t.eyebrow}
         title={t.title}
         body={t.body}
-        image={asset("maria-rooftop-story.png")}
         icon={<UsersRound size={15} />}
+        actions={
+          <span className="public-count-pill rounded-full bg-white/70 px-4 py-2 text-sm font-black text-[#365320] ring-1 ring-[#7d6033]/10">
+            {visibleStores.length} gardens
+          </span>
+        }
       />
       <section className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8">
+        <div className="public-toolbar mb-6 rounded-[24px] bg-[#fffdf7] p-4 shadow-lg shadow-[#604117]/8 ring-1 ring-[#7d6033]/12">
+          <div className="flex flex-wrap items-center gap-3">
+            <SearchBox value={query} onChange={setQuery} placeholder="Search gardens or barangays" />
+            <FilterChip active={areaFilter === "all"} onClick={() => setAreaFilter("all")}>All areas</FilterChip>
+            <FilterChip active={areaFilter === "rosario"} onClick={() => setAreaFilter("rosario")}>Rosario</FilterChip>
+            <FilterChip active={areaFilter === "kapitolyo"} onClick={() => setAreaFilter("kapitolyo")}>Kapitolyo</FilterChip>
+            <FilterChip active={areaFilter === "caniogan"} onClick={() => setAreaFilter("caniogan")}>Caniogan</FilterChip>
+          </div>
+        </div>
         {!loading && stores.length === 0 ? <p className="mb-5 font-bold text-[#5b513d]">{t.empty}</p> : null}
         <div className="grid gap-6 lg:grid-cols-3">
-          {(stores.length ? stores : sampleFarmers).map((store, index) => {
+          {visibleStores.map((store, index) => {
             const isLive = isStoreRecord(store);
             const area = isLive ? store.serviceAreas?.[0]?.barangay?.name ?? "Pasig City" : store.barangay;
             const productCount = isLive ? store._count?.products ?? 0 : store.products;
             return (
-              <article key={store.id} className="overflow-hidden rounded-[32px] bg-[#fffdf7] shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
-                <div className="h-64 bg-[#edf0d8]">
+              <article key={store.id} className="public-card overflow-hidden rounded-[32px] bg-[#fffdf7] shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
+                <div className="public-card-media h-44 bg-[#edf0d8]">
                   <img
                     src={isLive ? [asset("maria-harvest-basket.png"), asset("farmer-watering.png"), asset("hero-pasig-rooftop-farm.png")][index % 3] : store.image}
                     alt=""
@@ -532,14 +813,14 @@ export function FarmersPage() {
                   />
                 </div>
                 <div className="p-6">
-                  <span className="inline-flex items-center gap-2 rounded-full bg-[#edf5d9] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#245b2a]">
+                  <span className="public-status-pill inline-flex items-center gap-2 rounded-full bg-[#edf5d9] px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#245b2a]">
                     <ShieldCheck size={14} /> {t.verified}
                   </span>
-                  <h2 className="mt-4 text-2xl font-black text-[#17250f]">{store.name}</h2>
-                  <p className="mt-3 flex items-center gap-2 text-sm font-bold text-[#5a513d]">
+                  <h2 className="public-card-title mt-4 text-2xl font-black text-[#17250f]">{store.name}</h2>
+                  <p className="public-card-meta mt-3 flex items-center gap-2 text-sm font-bold text-[#5a513d]">
                     <MapPin size={16} className="text-[#246733]" /> {t.area}: {area}
                   </p>
-                  <p className="mt-2 text-sm font-bold text-[#5a513d]">
+                  <p className="public-card-meta mt-2 text-sm font-bold text-[#5a513d]">
                     {productCount} {t.products}
                   </p>
                   <Link href="/marketplace" className="mt-6 inline-flex h-12 items-center gap-2 rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">
@@ -558,23 +839,38 @@ export function FarmersPage() {
 export function RecipesPage() {
   const { locale } = useLocale();
   const t = copy[locale].recipes;
+  const [query, setQuery] = useState("");
+  const visibleRecipes = useMemo(() => {
+    const needle = query.toLowerCase();
+    return recipes.filter((recipe) => `${recipe.name} ${recipe.crops} ${recipe.body[locale]}`.toLowerCase().includes(needle));
+  }, [locale, query]);
 
   return (
     <Shell>
-      <Hero eyebrow={t.eyebrow} title={t.title} body={t.body} image={asset("recipe-kangkong.png")} icon={<ChefHat size={15} />} />
-      <section className="mx-auto grid max-w-[1320px] gap-6 px-5 pb-16 sm:px-8 lg:grid-cols-3">
-        {recipes.map((recipe) => (
-          <article key={recipe.name} className="rounded-[32px] bg-[#fffdf7] p-5 shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
-            <div className="h-56 rounded-3xl bg-[#f3ead3]">
+      <PageHeader
+        eyebrow={t.eyebrow}
+        title={t.title}
+        body={t.body}
+        icon={<ChefHat size={15} />}
+        actions={<span className="public-count-pill rounded-full bg-white/70 px-4 py-2 text-sm font-black text-[#365320] ring-1 ring-[#7d6033]/10">{visibleRecipes.length} recipes</span>}
+      />
+      <section className="mx-auto max-w-[1320px] px-5 pb-16 sm:px-8">
+        <div className="public-toolbar mb-6 rounded-[24px] bg-[#fffdf7] p-4 shadow-lg shadow-[#604117]/8 ring-1 ring-[#7d6033]/12">
+          <SearchBox value={query} onChange={setQuery} placeholder="Search recipes or ingredients" />
+        </div>
+        <div className="grid gap-6 lg:grid-cols-3">
+        {visibleRecipes.map((recipe) => (
+          <article key={recipe.name} className="public-card rounded-[24px] bg-[#fffdf7] p-5 shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
+            <div className="public-card-media h-40 rounded-2xl bg-[#f3ead3]">
               <img src={recipe.image} alt="" className="h-full w-full object-contain p-4" />
             </div>
-            <h2 className="mt-5 text-2xl font-black text-[#17250f]">{recipe.name}</h2>
-            <p className="mt-2 text-sm font-semibold leading-6 text-[#4a4635]">{recipe.body[locale]}</p>
-            <div className="mt-5 rounded-3xl bg-[#edf5d9] p-4">
-              <span className="text-xs font-black uppercase tracking-[0.14em] text-[#5a6235]">{t.cost}</span>
-              <strong className="mt-1 block text-2xl font-black text-[#1f4d25]">{recipe.cost}</strong>
+            <h2 className="public-card-title mt-5 text-2xl font-black text-[#17250f]">{recipe.name}</h2>
+            <p className="public-card-meta mt-2 text-sm font-semibold leading-6 text-[#4a4635]">{recipe.body[locale]}</p>
+            <div className="public-price-block mt-5 rounded-3xl bg-[#edf5d9] p-4">
+              <span className="public-card-meta text-xs font-black uppercase tracking-[0.14em] text-[#5a6235]">{t.cost}</span>
+              <strong className="public-price-text mt-1 block text-2xl font-black text-[#1f4d25]">{recipe.cost}</strong>
             </div>
-            <p className="mt-4 text-sm font-black text-[#245b2a]">
+            <p className="public-accent-text mt-4 text-sm font-black text-[#245b2a]">
               {t.bestWith}: {recipe.crops}
             </p>
             <Link href="/marketplace" className="mt-5 inline-flex h-12 items-center gap-2 rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">
@@ -582,6 +878,7 @@ export function RecipesPage() {
             </Link>
           </article>
         ))}
+        </div>
       </section>
     </Shell>
   );
@@ -593,29 +890,34 @@ export function ForecastPage() {
 
   return (
     <Shell>
-      <Hero eyebrow={t.eyebrow} title={t.title} body={t.body} image={asset("forecast-tablet.png")} icon={<BarChart3 size={15} />} />
+      <PageHeader
+        eyebrow={t.eyebrow}
+        title={t.title}
+        body={t.body}
+        icon={<BarChart3 size={15} />}
+        actions={<Link href="/marketplace" className="inline-flex min-h-11 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">{t.cta}</Link>}
+      />
       <section className="mx-auto grid max-w-[1320px] gap-6 px-5 pb-16 sm:px-8 lg:grid-cols-[1fr_0.8fr]">
-        <div className="rounded-[32px] bg-[#fffdf7] p-6 shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
+        <div className="public-card rounded-[32px] bg-[#fffdf7] p-6 shadow-xl shadow-[#604117]/10 ring-1 ring-[#7d6033]/14">
           <div className="grid gap-4">
             {forecasts.map((item) => (
-              <div key={item.crop} className="rounded-3xl bg-[#f8f0dd] p-5 ring-1 ring-[#d8c8a8]">
+              <div key={item.crop} className="public-forecast-row rounded-3xl bg-[#f8f0dd] p-5 ring-1 ring-[#d8c8a8]">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h2 className="text-2xl font-black text-[#17250f]">{item.crop}</h2>
-                  <span className="rounded-full bg-[#edf5d9] px-4 py-2 text-sm font-black text-[#1f4d25]">
+                  <h2 className="public-card-title text-2xl font-black text-[#17250f]">{item.crop}</h2>
+                  <span className="public-status-pill rounded-full bg-[#edf5d9] px-4 py-2 text-sm font-black text-[#1f4d25]">
                     {t.confidence}: {item.confidence}
                   </span>
                 </div>
-                <p className="mt-3 text-sm font-black uppercase tracking-[0.12em] text-[#6a623f]">
+                <p className="public-accent-text mt-3 text-sm font-black uppercase tracking-[0.12em] text-[#6a623f]">
                   {t.demand}: {item.demand}
                 </p>
-                <p className="mt-2 text-sm font-semibold leading-6 text-[#4a4635]">{item.note}</p>
+                <p className="public-card-meta mt-2 text-sm font-semibold leading-6 text-[#4a4635]">{item.note}</p>
               </div>
             ))}
           </div>
         </div>
         <aside className="rounded-[32px] bg-[#203525] p-7 text-[#fff8e8] shadow-xl shadow-[#604117]/10">
-          <img src={asset("forecast-tablet.png")} alt="" className="mx-auto h-56 w-full object-contain" />
-          <h2 className="mt-6 text-3xl font-black">SARIMA-ready planning</h2>
+          <h2 className="text-3xl font-black">SARIMA-ready planning</h2>
           <p className="mt-3 text-sm font-semibold leading-6 text-[#eadfc3]">
             Buyers can preview seasonal movement. Sellers can sign in later for deeper planning, inventory, and forecast generation.
           </p>
@@ -655,7 +957,13 @@ export function PasigPage() {
 
   return (
     <Shell>
-      <Hero eyebrow={t.eyebrow} title={t.title} body={t.body} image={asset("pasig-map-illustration.png")} icon={<MapPin size={15} />} />
+      <PageHeader
+        eyebrow={t.eyebrow}
+        title={t.title}
+        body={t.body}
+        icon={<MapPin size={15} />}
+        actions={<Link href="/farmers" className="inline-flex min-h-11 items-center rounded-2xl bg-[#145c2a] px-5 text-sm font-black text-white">{t.cta}</Link>}
+      />
       <section className="mx-auto max-w-[1440px] px-5 pb-16 sm:px-8">
         <div
           className="relative min-h-[720px] overflow-hidden rounded-[42px] bg-[#dcebbf] shadow-2xl shadow-[#604117]/14 ring-1 ring-[#7d6033]/14 lg:min-h-[820px]"
@@ -712,7 +1020,7 @@ export function PasigPage() {
                   event.stopPropagation();
                   setSelectedName(point.name);
                 }}
-                aria-label={`Barangay ${point.name}, ${count} farmers`}
+                aria-label={`Barangay ${point.name}, ${count} urban gardens`}
                 aria-pressed={isSelected}
                 className={`group absolute flex -translate-x-1/2 -translate-y-full flex-col items-center gap-2 text-center transition hover:-translate-y-[calc(100%+4px)] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#f6d27a] ${
                   isSelected ? "z-40" : "z-20"

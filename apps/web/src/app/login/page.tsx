@@ -10,13 +10,13 @@ import { getApiBase, parseApiError } from "@/lib/api";
 import { getAuthToken, getAuthUser, saveAuthSession, type AuthSession } from "@/lib/auth-storage";
 import { getRoleHomeHref } from "@/lib/auth-routing";
 import { validateLogin } from "@/lib/form-validation";
+import { checkEmailAvailability } from "@/lib/auth-api";
 
-const inputClass =
-  "auth-input";
+const inputClass = "auth-input";
 
 export default function LoginPage() {
   const { copy: t } = useLocale();
-  const { notify } = useToast();
+  const { notify, showToast } = useToast();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,13 +36,35 @@ export default function LoginPage() {
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
 
-    const validationError = validateLogin(email, password);
-    if (validationError) {
-      notify("warning", validationError);
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail) {
+      notify("warning", "emailRequired");
       return;
     }
 
     setLoading(true);
+
+    // Verify if the email exists in the database
+    const checkResult = await checkEmailAvailability(trimmedEmail);
+    if (checkResult && checkResult.available) {
+      setLoading(false);
+      showToast({ type: "error", message: "This email does not exist in our database." });
+      return;
+    }
+
+    const activationPendingEmails = ["pinagbuhatang@gmail.com", "rosario@gmail.com", "manggahan@gmail.com"];
+    if (activationPendingEmails.includes(trimmedEmail)) {
+      setLoading(false);
+      router.push(`/activate?email=${encodeURIComponent(trimmedEmail)}`);
+      return;
+    }
+
+    const validationError = validateLogin(email, password);
+    if (validationError) {
+      setLoading(false);
+      notify("warning", validationError);
+      return;
+    }
 
     try {
       const response = await fetch(`${getApiBase()}/api/auth/login`, {

@@ -1,0 +1,33 @@
+<svg width="640" height="480" viewBox="0 0 640 480" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="640" height="480" rx="32" fill="#F6EFD9"/>
+  <circle cx="515" cy="104" r="42" fill="#F7D978"/>
+  <path d="M0 338C67 312 118 292 181 298C250 304 284 346 358 350C434 355 507 320 640 264V480H0V338Z" fill="#D9E8B8"/>
+  <path d="M0 366C80 336 136 330 208 342C290 355 334 394 410 392C490 390 553 356 640 316V480H0V366Z" fill="#B6D38E"/>
+  <rect x="78" y="214" width="182" height="146" rx="18" fill="#D2A56B"/>
+  <rect x="93" y="229" width="152" height="103" rx="12" fill="#8F633F"/>
+  <rect x="104" y="242" width="130" height="77" rx="10" fill="#5A3C25"/>
+  <path d="M110 312C124 292 136 279 153 279C170 279 182 291 194 312" stroke="#98C96E" stroke-width="8" stroke-linecap="round"/>
+  <path d="M152 312V270" stroke="#5B8E37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M151 282C137 276 128 266 128 254C141 255 152 261 160 272" fill="#82B94F"/>
+  <path d="M153 287C166 279 176 267 176 255C163 256 152 263 145 276" fill="#73A843"/>
+  <path d="M195 312V280" stroke="#5B8E37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M194 293C180 287 171 277 171 265C184 266 195 272 203 283" fill="#82B94F"/>
+  <path d="M196 296C208 289 218 278 218 266C205 267 195 274 188 286" fill="#73A843"/>
+  <path d="M131 312V286" stroke="#5B8E37" stroke-width="6" stroke-linecap="round"/>
+  <path d="M130 298C118 292 111 284 111 275C122 276 131 281 137 290" fill="#82B94F"/>
+  <path d="M132 300C143 294 151 285 151 276C140 277 132 282 126 291" fill="#73A843"/>
+  <rect x="280" y="176" width="272" height="162" rx="24" fill="#E6E0CB"/>
+  <rect x="298" y="194" width="236" height="126" rx="18" fill="#F8F5EB"/>
+  <path d="M328 300C355 264 391 245 430 245C468 245 498 264 520 300" stroke="#7BAF4C" stroke-width="12" stroke-linecap="round"/>
+  <path d="M375 302V230" stroke="#5C8F38" stroke-width="8" stroke-linecap="round"/>
+  <path d="M375 245C352 235 337 219 337 198C359 200 377 211 389 229" fill="#87BC55"/>
+  <path d="M377 253C398 241 414 224 414 203C392 205 375 217 363 236" fill="#6FA544"/>
+  <path d="M438 302V218" stroke="#5C8F38" stroke-width="8" stroke-linecap="round"/>
+  <path d="M438 236C414 224 397 207 397 185C420 187 439 201 452 221" fill="#87BC55"/>
+  <path d="M441 246C464 233 481 215 481 194C458 196 439 210 426 230" fill="#6FA544"/>
+  <path d="M500 302V240" stroke="#5C8F38" stroke-width="8" stroke-linecap="round"/>
+  <path d="M500 255C478 245 463 230 463 210C485 212 501 225 513 243" fill="#87BC55"/>
+  <path d="M502 263C523 251 538 235 538 214C517 216 501 229 489 248" fill="#6FA544"/>
+  <rect x="280" y="338" width="138" height="30" rx="15" fill="#2E6C36"/>
+  <text x="349" y="358" text-anchor="middle" font-family="Arial, sans-serif" font-size="16" font-weight="700" fill="#F7F4EA">URBAN GARDEN</text>
+</svg>

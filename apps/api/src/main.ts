@@ -5,7 +5,7 @@ import { AppModule } from "./app.module";
 import { apiStorageRoot } from "./storage-paths";
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { rawBody: true });
   app.setGlobalPrefix("api");
   app.useStaticAssets(apiStorageRoot(), { prefix: "/uploads/" });
   app.enableCors({

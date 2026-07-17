@@ -5,17 +5,20 @@ export const AUTH_LIMITS = {
   passwordMax: 128,
   fullNameMin: 2,
   fullNameMax: 255,
-  phoneMax: 30
+  phoneMax: 13
 } as const;
 
 /** Practical RFC 5322–style pattern; stored lowercase in PostgreSQL (VarChar 255). */
 export const EMAIL_REGEX =
   /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/;
 
+export const GMAIL_REGEX =
+  /^[a-z0-9.!#$%&'*+/=?^_`{|}~-]+@gmail\.com$/;
+
 /** At least 8 chars, one upper, one lower, one digit; no spaces; max 128. */
 export const PASSWORD_STRONG_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)\S{8,128}$/;
 
-const PHONE_REGEX = /^\+?[0-9][0-9\s-]{6,28}[0-9]$/;
+export const PHONE_REGEX = /^09\d{2}\s\d{3}\s\d{4}$/;
 
 export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
@@ -97,6 +100,6 @@ export const AUTH_ERROR_MESSAGES: Record<string, string> = {
   PASSWORD_WEAK: PASSWORD_ISSUE_MESSAGES.weak,
   FULL_NAME_REQUIRED: "Full name is required.",
   FULL_NAME_INVALID: "Full name must be between 2 and 255 characters.",
-  PHONE_INVALID: "Please enter a valid phone number.",
+  PHONE_INVALID: "Please enter a valid Philippine mobile number in this format: 09xx xxx xxxx.",
   PHONE_LONG: `Phone must be at most ${AUTH_LIMITS.phoneMax} characters.`
 };

@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, Post, Query, Req, UseGuards } from "@nestjs/common";
 import { IsEmail, IsIn, IsOptional, IsString, MinLength } from "class-validator";
 import { UserRole } from "@prisma/client";
 import { AuthenticatedRequest, AuthGuard } from "./auth.guard";
@@ -32,6 +32,22 @@ class LoginDto {
   password!: string;
 }
 
+class ActivateDto {
+  @IsEmail()
+  staticEmail!: string;
+
+  @IsEmail()
+  personalEmail!: string;
+
+  @IsString()
+  code!: string;
+}
+
+class CheckEmailQueryDto {
+  @IsEmail()
+  email!: string;
+}
+
 class RefreshTokenDto {
   @IsString()
   refreshToken!: string;
@@ -49,6 +65,22 @@ export class AuthController {
   @Post("login")
   login(@Body() body: LoginDto) {
     return this.authService.login(body);
+  }
+
+  @Post("activate")
+  activate(@Body() body: ActivateDto) {
+    return this.authService.activate(body);
+  }
+
+  @Get("check-email")
+  async checkEmail(@Query() query: CheckEmailQueryDto) {
+    const email = query.email.trim().toLowerCase();
+    const existing = await this.authService.findUserByEmail(email);
+    return {
+      available: !existing,
+      valid: true,
+      email,
+    };
   }
 
   @Post("refresh")

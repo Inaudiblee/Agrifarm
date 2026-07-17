@@ -12,8 +12,7 @@ export class SellersService {
 
   async getProfile(user: User) {
     return this.prisma.sellerProfile.findUnique({
-      where: { userId: user.id },
-      include: { stores: true }
+      where: { userId: user.id }
     });
   }
 

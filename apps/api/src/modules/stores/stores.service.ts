@@ -143,6 +143,76 @@ export class StoresService {
     });
   }
 
+  async getOrCreateDefaultStoreForGarden(user: User, gardenName: string) {
+    const profile = await this.sellersService.requireSellerProfile(user);
+    const normalizedGarden = normalizeBarangay(gardenName);
+    const barangay = await this.prisma.barangay.findUnique({
+      where: { normalizedName: normalizedGarden }
+    });
+    if (!barangay || !barangay.isActive) {
+      throw new NotFoundException(`Unknown or inactive Pasig barangay: ${gardenName}`);
+    }
+
+    const storeName = `${barangay.name} Urban Garden`;
+    const existing = await this.prisma.store.findFirst({
+      where: {
+        sellerProfileId: profile.id,
+        deletedAt: null,
+        OR: [
+          { name: storeName },
+          {
+            serviceAreas: {
+              some: {
+                barangayId: barangay.id,
+                isActive: true
+              }
+            }
+          }
+        ]
+      },
+      include: { serviceAreas: { include: { barangay: true } } },
+      orderBy: { createdAt: "asc" }
+    });
+
+    if (existing) {
+      await this.prisma.storeServiceArea.upsert({
+        where: { storeId_barangayId: { storeId: existing.id, barangayId: barangay.id } },
+        create: { storeId: existing.id, barangayId: barangay.id, deliveryFee: "0" },
+        update: { isActive: true }
+      });
+      return existing;
+    }
+
+    const baseSlug = slugify(`${storeName}-${profile.id.slice(-6)}`);
+    return this.prisma.$transaction(async (tx) => {
+      const store = await tx.store.create({
+        data: {
+          sellerProfileId: profile.id,
+          name: storeName,
+          slug: baseSlug,
+          description: `Default selling point for ${barangay.name} urban garden harvests.`,
+          status: StoreStatus.ACTIVE,
+          serviceAreas: {
+            create: {
+              barangayId: barangay.id,
+              deliveryFee: "0"
+            }
+          }
+        },
+        include: { serviceAreas: { include: { barangay: true } } }
+      });
+      await this.audit.write({
+        actorId: user.id,
+        action: AuditAction.CREATE,
+        entityType: "Store",
+        entityId: store.id,
+        metadata: { slug: store.slug, status: store.status, defaultUrbanGarden: barangay.name },
+        client: tx
+      });
+      return store;
+    });
+  }
+
   async update(user: User, storeId: string, input: { name?: string; slug?: string; description?: string; status?: StoreStatus }) {
     await this.requireOwnedStore(user, storeId);
     const data = {

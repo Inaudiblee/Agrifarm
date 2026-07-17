@@ -61,6 +61,54 @@ export class AuthService {
     return this.authResponse(user);
   }
 
+  async activate(input: { staticEmail: string; personalEmail: string; code: string }) {
+    const staticEmail = input.staticEmail.trim().toLowerCase();
+    const personalEmail = input.personalEmail.trim().toLowerCase();
+    const code = input.code.trim();
+
+    const allowed = ["pinagbuhatang@gmail.com", "rosario@gmail.com", "manggahan@gmail.com"];
+    if (!allowed.includes(staticEmail)) {
+      throw new BadRequestException("This account is not eligible for activation.");
+    }
+
+    if (code !== "123456") {
+      throw new BadRequestException("Invalid verification code. Use 123456 for testing.");
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { email: staticEmail } });
+    if (!user) {
+      throw new BadRequestException("Seller account not found.");
+    }
+    if (user.role !== UserRole.SELLER) {
+      throw new BadRequestException("Only seller accounts can be activated.");
+    }
+
+    // Check if personal email is already in use
+    const existing = await this.prisma.user.findUnique({ where: { email: personalEmail } });
+    if (existing) {
+      throw new BadRequestException("Personal email is already registered.");
+    }
+
+    // Update user
+    const updatedUser = await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        email: personalEmail,
+        fullName: staticEmail,
+      },
+    });
+
+    await this.audit.write({
+      actorId: updatedUser.id,
+      action: AuditAction.UPDATE,
+      entityType: "User",
+      entityId: updatedUser.id,
+      metadata: { activatedFrom: staticEmail, activatedTo: personalEmail },
+    });
+
+    return this.authResponse(updatedUser);
+  }
+
   async refresh(refreshToken: string) {
     const tokenHash = this.hashToken(refreshToken);
     const storedToken = await this.prisma.refreshToken.findUnique({
@@ -103,6 +151,12 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async findUserByEmail(email: string) {
+    return this.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+    });
   }
 
   private async authResponse(user: User) {

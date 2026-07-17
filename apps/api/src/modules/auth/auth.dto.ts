@@ -13,6 +13,8 @@ import { UserRole } from "@prisma/client";
 import {
   AUTH_LIMITS,
   EMAIL_REGEX,
+  GMAIL_REGEX,
+  PHONE_REGEX,
   PASSWORD_STRONG_REGEX,
   normalizeEmail,
   normalizeFullName
@@ -26,6 +28,9 @@ export class RegisterDto {
   @IsEmail()
   @Matches(EMAIL_REGEX, {
     message: "Please enter a valid email address."
+  })
+  @Matches(GMAIL_REGEX, {
+    message: "Please use a valid Gmail address ending in @gmail.com."
   })
   email!: string;
 
@@ -48,8 +53,8 @@ export class RegisterDto {
   @IsString()
   @MaxLength(AUTH_LIMITS.phoneMax)
   @ValidateIf((o: RegisterDto) => Boolean(o.phone?.trim()))
-  @Matches(/^\+?[0-9][0-9\s-]{6,28}[0-9]$/, {
-    message: "Please enter a valid phone number."
+  @Matches(PHONE_REGEX, {
+    message: "Please enter a valid Philippine mobile number in this format: 09xx xxx xxxx."
   })
   phone?: string;
 

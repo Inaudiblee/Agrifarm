@@ -1,0 +1,455 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1720" height="2220" viewBox="0 0 1720 2220" role="img" aria-labelledby="title desc">
+  <title id="title">Agrifarm Database Architecture ERD</title>
+  <desc id="desc">Grouped database architecture diagram showing primary key to foreign key relationships generated from the Prisma schema.</desc>
+  <defs>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#1f2937" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 8 4 L 0 8 z" fill="#607d8b" opacity="0.65"/>
+    </marker>
+    <style>
+      .title { font: 700 28px Arial, sans-serif; fill: #1f2937; }
+      .subtitle { font: 400 14px Arial, sans-serif; fill: #566274; }
+      .group-title { font: 700 16px Arial, sans-serif; fill: #253042; letter-spacing: .2px; }
+      .table-title { font: 700 15px Arial, sans-serif; fill: #ffffff; }
+      .field { font: 400 12px Consolas, "SFMono-Regular", monospace; fill: #263238; }
+      .edge-label { font: 400 10px Consolas, "SFMono-Regular", monospace; fill: #455a64; paint-order: stroke; stroke: #ffffff; stroke-width: 3px; }
+      .legend { font: 400 12px Arial, sans-serif; fill: #45505f; }
+    </style>
+  </defs>
+  <rect width="100%" height="100%" fill="#fafbfc"/>
+  <text x="60" y="48" class="title">Agrifarm Database Architecture ERD</text>
+  <text x="60" y="72" class="subtitle">Grouped by business domain. Table rows show key primary, foreign, and unique fields. Relationship lines represent every Prisma @relation field mapping.</text>
+  <g id="groups"><rect x="36" y="42" width="318" height="496" rx="10" fill="#eef4ff" stroke="#4f6fad" stroke-width="1.5" opacity="0.72" />
+<text x="54" y="76" class="group-title">Identity &amp; Access</text>
+<rect x="36" y="702" width="318" height="280" rx="10" fill="#edf8f3" stroke="#2e8064" stroke-width="1.5" opacity="0.72" />
+<text x="54" y="736" class="group-title">Geography &amp; Service Areas</text>
+<rect x="406" y="42" width="624" height="622" rx="10" fill="#fff7e8" stroke="#b87918" stroke-width="1.5" opacity="0.72" />
+<text x="424" y="76" class="group-title">Marketplace Catalog</text>
+<rect x="1026" y="42" width="318" height="712" rx="10" fill="#f2efff" stroke="#7257ba" stroke-width="1.5" opacity="0.72" />
+<text x="1044" y="76" class="group-title">Checkout &amp; Orders</text>
+<rect x="1376" y="42" width="318" height="766" rx="10" fill="#fdf0f2" stroke="#ba4f63" stroke-width="1.5" opacity="0.72" />
+<text x="1394" y="76" class="group-title">Finance &amp; Operations</text>
+<rect x="406" y="842" width="930" height="838" rx="10" fill="#f1f7e9" stroke="#688d2e" stroke-width="1.5" opacity="0.72" />
+<text x="424" y="876" class="group-title">Urban Agriculture Data</text>
+<rect x="1376" y="722" width="318" height="166" rx="10" fill="#f5f5f5" stroke="#777777" stroke-width="1.5" opacity="0.72" />
+<text x="1394" y="756" class="group-title">Localization</text></g>
+  <g id="relationships"><path d="M 195 168 C 195 168, 195 190, 195 190" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="199" y="175" class="edge-label">userId</text>
+<path d="M 195 168 C 195 168, 195 298, 195 298" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 341 C 380 341, 380 143, 430 143" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="384" y="238" class="edge-label">sellerProfileId</text>
+<path d="M 565 186 C 380 186, 380 850, 195 850" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 195 828 C 195 828, 195 850, 195 850" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="199" y="835" class="edge-label">barangayId</text>
+<path d="M 871 100 C 871 100, 871 100, 871 100" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 186 C 565 186, 565 208, 565 208" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="569" y="193" class="edge-label">storeId</text>
+<path d="M 700 143 C 718 143, 718 260, 736 260" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 251 C 718 251, 718 260, 736 260" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="251.5" class="edge-label">productId,storeId</text>
+<path d="M 565 294 C 565 294, 565 316, 565 316" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 736 143 C 718 143, 718 359, 700 359" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="247" class="edge-label">categoryId</text>
+<path d="M 700 251 C 718 251, 718 377, 736 377" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 195 168 C 195 168, 195 406, 195 406" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="199" y="283" class="edge-label">userId</text>
+<path d="M 195 760 C 195 760, 195 510, 195 510" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 134 C 380 134, 380 467, 430 467" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="384" y="296.5" class="edge-label">userId</text>
+<path d="M 700 467 C 718 467, 718 494, 736 494" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 871 312 C 871 312, 871 442, 871 442" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="875" y="373" class="edge-label">variantId</text>
+<path d="M 330 134 C 690 134, 690 152, 1050 152" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 458 C 690 458, 690 152, 1050 152" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="694" y="301" class="edge-label">shippingAddressId,buyerId</text>
+<path d="M 1185 204 C 1185 204, 1185 226, 1185 226" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 143 C 875 143, 875 278, 1050 278" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="879" y="206.5" class="edge-label">storeId</text>
+<path d="M 1185 204 C 1185 204, 1185 352, 1185 352" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1185 330 C 1185 330, 1185 352, 1185 352" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1189" y="337" class="edge-label">sellerOrderId,storeId</text>
+<path d="M 1006 260 C 1028 260, 1028 422, 1050 422" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1185 204 C 1185 204, 1185 514, 1185 514" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1189" y="355" class="edge-label">orderId</text>
+<path d="M 1185 330 C 1185 330, 1185 622, 1185 622" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 134 C 690 134, 690 674, 1050 674" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="694" y="400" class="edge-label">riderId</text>
+<path d="M 700 143 C 1050 143, 1050 161, 1400 161" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1320 152 C 1360 152, 1360 161, 1400 161" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1364" y="152.5" class="edge-label">orderId</text>
+<path d="M 1320 278 C 1360 278, 1360 161, 1400 161" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 143 C 1050 143, 1050 386, 1400 386" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1054" y="260.5" class="edge-label">storeId</text>
+<path d="M 1535 312 C 1535 312, 1535 334, 1535 334" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1006 260 C 1203 260, 1203 512, 1400 512" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1207" y="382" class="edge-label">variantId</text>
+<path d="M 330 134 C 865 134, 865 512, 1400 512" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 195 168 C 380 168, 380 532, 565 532" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="384" y="346" class="edge-label">userId</text>
+<path d="M 565 294 C 565 294, 565 532, 565 532" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 134 C 865 134, 865 629, 1400 629" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="869" y="377.5" class="edge-label">actorId</text>
+<path d="M 330 134 C 865 134, 865 737, 1400 737" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 794 C 533 794, 533 952, 736 952" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="537" y="869" class="edge-label">barangayId</text>
+<path d="M 700 934 C 718 934, 718 952, 736 952" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 794 C 686 794, 686 952, 1042 952" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="690" y="869" class="edge-label">barangayId</text>
+<path d="M 700 934 C 871 934, 871 952, 1042 952" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1042 952 C 871 952, 871 1033, 700 1033" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="875" y="988.5" class="edge-label">associationId</text>
+<path d="M 736 952 C 718 952, 718 1033, 700 1033" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 794 C 533 794, 533 1087, 736 1087" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="537" y="936.5" class="edge-label">barangayId</text>
+<path d="M 1042 952 C 1024 952, 1024 1087, 1006 1087" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 934 C 718 934, 718 1087, 736 1087" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="1006.5" class="edge-label">sourceId</text>
+<path d="M 1006 1087 C 1024 1087, 1024 1069, 1042 1069" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1006 952 C 1024 952, 1024 1069, 1042 1069" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1028" y="1006.5" class="edge-label">farmerId</text>
+<path d="M 565 968 C 565 968, 565 1098, 565 1098" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1006 1087 C 1024 1087, 1024 1204, 1042 1204" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1028" y="1141.5" class="edge-label">siteId</text>
+<path d="M 700 1141 C 871 1141, 871 1204, 1042 1204" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1006 952 C 1024 952, 1024 1204, 1042 1204" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1028" y="1074" class="edge-label">farmerId</text>
+<path d="M 700 934 C 871 934, 871 1204, 1042 1204" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 1042 1204 C 1024 1204, 1024 1249, 1006 1249" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1028" y="1222.5" class="edge-label">cultivationId</text>
+<path d="M 871 1148 C 871 1148, 871 1170, 871 1170" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 1141 C 718 1141, 718 1249, 736 1249" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="1191" class="edge-label">cropId</text>
+<path d="M 871 1004 C 871 1004, 871 1170, 871 1170" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 968 C 718 968, 718 1170, 871 1170" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="1065" class="edge-label">sourceId</text>
+<path d="M 565 1184 C 565 1184, 565 1206, 565 1206" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 195 828 C 380 828, 380 1206, 565 1206" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="384" y="1013" class="edge-label">barangayId</text>
+<path d="M 736 1087 C 718 1087, 718 1276, 700 1276" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 968 C 565 968, 565 1206, 565 1206" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="569" y="1083" class="edge-label">sourceId</text>
+<path d="M 700 1141 C 871 1141, 871 1357, 1042 1357" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 794 C 686 794, 686 1357, 1042 1357" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="690" y="1071.5" class="edge-label">barangayId</text>
+<path d="M 700 934 C 871 934, 871 1357, 1042 1357" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 700 1141 C 718 1141, 718 1420, 736 1420" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="1276.5" class="edge-label">cropId</text>
+<path d="M 330 794 C 533 794, 533 1420, 736 1420" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 871 1148 C 871 1148, 871 1350, 871 1350" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="875" y="1245" class="edge-label">siteId</text>
+<path d="M 565 968 C 718 968, 718 1350, 871 1350" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 1184 C 565 1184, 565 1368, 565 1368" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="569" y="1272" class="edge-label">cropId</text>
+<path d="M 195 828 C 380 828, 380 1368, 565 1368" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 968 C 565 968, 565 1368, 565 1368" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="569" y="1164" class="edge-label">sourceId</text>
+<path d="M 700 1141 C 871 1141, 871 1519, 1042 1519" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 330 794 C 686 794, 686 1519, 1042 1519" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="690" y="1152.5" class="edge-label">barangayId</text>
+<path d="M 871 1148 C 1024 1148, 1024 1440, 1177 1440" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 871 1004 C 1024 1004, 1024 1440, 1177 1440" fill="none" stroke="#9c3d52" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="1028" y="1218" class="edge-label">farmerId</text>
+<path d="M 700 934 C 871 934, 871 1519, 1042 1519" fill="none" stroke="#556b2f" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 565 1184 C 565 1184, 565 1512, 565 1512" fill="none" stroke="#607d8b" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="569" y="1344" class="edge-label">cropId</text>
+<path d="M 195 828 C 380 828, 380 1512, 565 1512" fill="none" stroke="#7e57c2" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<path d="M 871 1148 C 718 1148, 718 1512, 565 1512" fill="none" stroke="#2e7d62" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" />
+<text x="722" y="1326" class="edge-label">siteId</text>
+<path d="M 565 968 C 565 968, 565 1512, 565 1512" fill="none" stroke="#b26a00" stroke-width="1.35" stroke-opacity="0.48" marker-end="url(#arrow)" /></g>
+  <g id="tables"><rect x="60" y="100" width="270" height="68" rx="7" fill="#ffffff" stroke="#4f6fad" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="100" width="270" height="34" rx="7" fill="#4f6fad" />
+<rect x="60" y="127" width="270" height="7" fill="#4f6fad" />
+<text x="74" y="122" class="table-title">User</text>
+<text x="74" y="152" class="field">[PK] id: String</text>
+<rect x="60" y="190" width="270" height="86" rx="7" fill="#ffffff" stroke="#4f6fad" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="190" width="270" height="34" rx="7" fill="#4f6fad" />
+<rect x="60" y="217" width="270" height="7" fill="#4f6fad" />
+<text x="74" y="212" class="table-title">RefreshToken</text>
+<text x="74" y="242" class="field">[PK] id: String</text>
+<text x="74" y="260" class="field">[FK] userId: String</text>
+<rect x="60" y="298" width="270" height="86" rx="7" fill="#ffffff" stroke="#4f6fad" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="298" width="270" height="34" rx="7" fill="#4f6fad" />
+<rect x="60" y="325" width="270" height="7" fill="#4f6fad" />
+<text x="74" y="320" class="table-title">SellerProfile</text>
+<text x="74" y="350" class="field">[PK] id: String</text>
+<text x="74" y="368" class="field">[FK|UK] userId: String</text>
+<rect x="60" y="406" width="270" height="104" rx="7" fill="#ffffff" stroke="#4f6fad" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="406" width="270" height="34" rx="7" fill="#4f6fad" />
+<rect x="60" y="433" width="270" height="7" fill="#4f6fad" />
+<text x="74" y="428" class="table-title">Address</text>
+<text x="74" y="458" class="field">[PK] id: String</text>
+<text x="74" y="476" class="field">[FK] userId: String</text>
+<text x="74" y="494" class="field">[FK] barangayId: String</text>
+<rect x="60" y="760" width="270" height="68" rx="7" fill="#ffffff" stroke="#2e8064" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="760" width="270" height="34" rx="7" fill="#2e8064" />
+<rect x="60" y="787" width="270" height="7" fill="#2e8064" />
+<text x="74" y="782" class="table-title">Barangay</text>
+<text x="74" y="812" class="field">[PK] id: String</text>
+<rect x="60" y="850" width="270" height="104" rx="7" fill="#ffffff" stroke="#2e8064" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="60" y="850" width="270" height="34" rx="7" fill="#2e8064" />
+<rect x="60" y="877" width="270" height="7" fill="#2e8064" />
+<text x="74" y="872" class="table-title">StoreServiceArea</text>
+<text x="74" y="902" class="field">[PK] id: String</text>
+<text x="74" y="920" class="field">[FK] storeId: String</text>
+<text x="74" y="938" class="field">[FK] barangayId: String</text>
+<rect x="430" y="100" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="100" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="430" y="127" width="270" height="7" fill="#b87918" />
+<text x="444" y="122" class="table-title">Store</text>
+<text x="444" y="152" class="field">[PK] id: String</text>
+<text x="444" y="170" class="field">[FK] sellerProfileId: String</text>
+<rect x="736" y="100" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="100" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="736" y="127" width="270" height="7" fill="#b87918" />
+<text x="750" y="122" class="table-title">Category</text>
+<text x="750" y="152" class="field">[PK] id: String</text>
+<text x="750" y="170" class="field">[FK] parentId: String</text>
+<rect x="430" y="208" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="208" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="430" y="235" width="270" height="7" fill="#b87918" />
+<text x="444" y="230" class="table-title">Product</text>
+<text x="444" y="260" class="field">[PK] id: String</text>
+<text x="444" y="278" class="field">[FK] storeId: String</text>
+<rect x="736" y="208" width="270" height="104" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="208" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="736" y="235" width="270" height="7" fill="#b87918" />
+<text x="750" y="230" class="table-title">ProductVariant</text>
+<text x="750" y="260" class="field">[PK] id: String</text>
+<text x="750" y="278" class="field">[FK] productId: String</text>
+<text x="750" y="296" class="field">[FK] storeId: String</text>
+<rect x="430" y="316" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="316" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="430" y="343" width="270" height="7" fill="#b87918" />
+<text x="444" y="338" class="table-title">ProductCategory</text>
+<text x="444" y="368" class="field">[PK|FK] productId: String</text>
+<text x="444" y="386" class="field">[PK|FK] categoryId: String</text>
+<rect x="736" y="334" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="334" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="736" y="361" width="270" height="7" fill="#b87918" />
+<text x="750" y="356" class="table-title">ProductImage</text>
+<text x="750" y="386" class="field">[PK] id: String</text>
+<text x="750" y="404" class="field">[FK] productId: String</text>
+<rect x="430" y="424" width="270" height="86" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="424" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="430" y="451" width="270" height="7" fill="#b87918" />
+<text x="444" y="446" class="table-title">Cart</text>
+<text x="444" y="476" class="field">[PK] id: String</text>
+<text x="444" y="494" class="field">[FK] userId: String</text>
+<rect x="736" y="442" width="270" height="104" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="442" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="736" y="469" width="270" height="7" fill="#b87918" />
+<text x="750" y="464" class="table-title">CartItem</text>
+<text x="750" y="494" class="field">[PK] id: String</text>
+<text x="750" y="512" class="field">[FK] cartId: String</text>
+<text x="750" y="530" class="field">[FK] variantId: String</text>
+<rect x="430" y="532" width="270" height="104" rx="7" fill="#ffffff" stroke="#b87918" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="532" width="270" height="34" rx="7" fill="#b87918" />
+<rect x="430" y="559" width="270" height="7" fill="#b87918" />
+<text x="444" y="554" class="table-title">Review</text>
+<text x="444" y="584" class="field">[PK] id: String</text>
+<text x="444" y="602" class="field">[FK] userId: String</text>
+<text x="444" y="620" class="field">[FK] productId: String</text>
+<rect x="1050" y="100" width="270" height="104" rx="7" fill="#ffffff" stroke="#7257ba" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1050" y="100" width="270" height="34" rx="7" fill="#7257ba" />
+<rect x="1050" y="127" width="270" height="7" fill="#7257ba" />
+<text x="1064" y="122" class="table-title">Order</text>
+<text x="1064" y="152" class="field">[PK] id: String</text>
+<text x="1064" y="170" class="field">[FK] buyerId: String</text>
+<text x="1064" y="188" class="field">[FK] shippingAddressId: String</text>
+<rect x="1050" y="226" width="270" height="104" rx="7" fill="#ffffff" stroke="#7257ba" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1050" y="226" width="270" height="34" rx="7" fill="#7257ba" />
+<rect x="1050" y="253" width="270" height="7" fill="#7257ba" />
+<text x="1064" y="248" class="table-title">SellerOrder</text>
+<text x="1064" y="278" class="field">[PK] id: String</text>
+<text x="1064" y="296" class="field">[FK] orderId: String</text>
+<text x="1064" y="314" class="field">[FK] storeId: String</text>
+<rect x="1050" y="352" width="270" height="140" rx="7" fill="#ffffff" stroke="#7257ba" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1050" y="352" width="270" height="34" rx="7" fill="#7257ba" />
+<rect x="1050" y="379" width="270" height="7" fill="#7257ba" />
+<text x="1064" y="374" class="table-title">OrderItem</text>
+<text x="1064" y="404" class="field">[PK] id: String</text>
+<text x="1064" y="422" class="field">[FK] orderId: String</text>
+<text x="1064" y="440" class="field">[FK] sellerOrderId: String</text>
+<text x="1064" y="458" class="field">[FK] variantId: String</text>
+<text x="1064" y="476" class="field">[FK] storeId: String</text>
+<rect x="1050" y="514" width="270" height="86" rx="7" fill="#ffffff" stroke="#7257ba" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1050" y="514" width="270" height="34" rx="7" fill="#7257ba" />
+<rect x="1050" y="541" width="270" height="7" fill="#7257ba" />
+<text x="1064" y="536" class="table-title">Payment</text>
+<text x="1064" y="566" class="field">[PK] id: String</text>
+<text x="1064" y="584" class="field">[FK] orderId: String</text>
+<rect x="1050" y="622" width="270" height="104" rx="7" fill="#ffffff" stroke="#7257ba" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1050" y="622" width="270" height="34" rx="7" fill="#7257ba" />
+<rect x="1050" y="649" width="270" height="7" fill="#7257ba" />
+<text x="1064" y="644" class="table-title">Fulfillment</text>
+<text x="1064" y="674" class="field">[PK] id: String</text>
+<text x="1064" y="692" class="field">[FK|UK] sellerOrderId: String</text>
+<text x="1064" y="710" class="field">[FK] riderId: String</text>
+<rect x="1400" y="100" width="270" height="122" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="100" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="127" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="122" class="table-title">FinancialTransaction</text>
+<text x="1414" y="152" class="field">[PK] id: String</text>
+<text x="1414" y="170" class="field">[FK] storeId: String</text>
+<text x="1414" y="188" class="field">[FK] orderId: String</text>
+<text x="1414" y="206" class="field">[FK] sellerOrderId: String</text>
+<rect x="1400" y="244" width="270" height="68" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="244" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="271" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="266" class="table-title">CommissionPlan</text>
+<text x="1414" y="296" class="field">[PK] id: String</text>
+<rect x="1400" y="334" width="270" height="104" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="334" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="361" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="356" class="table-title">StoreCommission</text>
+<text x="1414" y="386" class="field">[PK] id: String</text>
+<text x="1414" y="404" class="field">[FK] storeId: String</text>
+<text x="1414" y="422" class="field">[FK] commissionPlanId: String</text>
+<rect x="1400" y="460" width="270" height="104" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="460" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="487" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="482" class="table-title">InventoryLedger</text>
+<text x="1414" y="512" class="field">[PK] id: String</text>
+<text x="1414" y="530" class="field">[FK] variantId: String</text>
+<text x="1414" y="548" class="field">[FK] changedById: String</text>
+<rect x="1400" y="586" width="270" height="86" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="586" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="613" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="608" class="table-title">AuditLog</text>
+<text x="1414" y="638" class="field">[PK] id: String</text>
+<text x="1414" y="656" class="field">[FK] actorId: String</text>
+<rect x="1400" y="694" width="270" height="86" rx="7" fill="#ffffff" stroke="#ba4f63" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="694" width="270" height="34" rx="7" fill="#ba4f63" />
+<rect x="1400" y="721" width="270" height="7" fill="#ba4f63" />
+<text x="1414" y="716" class="table-title">Notification</text>
+<text x="1414" y="746" class="field">[PK] id: String</text>
+<text x="1414" y="764" class="field">[FK] userId: String</text>
+<rect x="430" y="900" width="270" height="68" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="900" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="927" width="270" height="7" fill="#688d2e" />
+<text x="444" y="922" class="table-title">AgriculturalDataSource</text>
+<text x="444" y="952" class="field">[PK] id: String</text>
+<rect x="736" y="900" width="270" height="104" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="900" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="736" y="927" width="270" height="7" fill="#688d2e" />
+<text x="750" y="922" class="table-title">UrbanFarmer</text>
+<text x="750" y="952" class="field">[PK] id: String</text>
+<text x="750" y="970" class="field">[FK] barangayId: String</text>
+<text x="750" y="988" class="field">[FK] sourceId: String</text>
+<rect x="1042" y="900" width="270" height="104" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1042" y="900" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="1042" y="927" width="270" height="7" fill="#688d2e" />
+<text x="1056" y="922" class="table-title">FarmingAssociation</text>
+<text x="1056" y="952" class="field">[PK] id: String</text>
+<text x="1056" y="970" class="field">[FK] barangayId: String</text>
+<text x="1056" y="988" class="field">[FK] sourceId: String</text>
+<rect x="430" y="990" width="270" height="86" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="990" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="1017" width="270" height="7" fill="#688d2e" />
+<text x="444" y="1012" class="table-title">FarmingAssociationMember</text>
+<text x="444" y="1042" class="field">[PK|FK] associationId: String</text>
+<text x="444" y="1060" class="field">[PK|FK] farmerId: String</text>
+<rect x="736" y="1026" width="270" height="122" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="1026" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="736" y="1053" width="270" height="7" fill="#688d2e" />
+<text x="750" y="1048" class="table-title">FarmingSite</text>
+<text x="750" y="1078" class="field">[PK] id: String</text>
+<text x="750" y="1096" class="field">[FK] barangayId: String</text>
+<text x="750" y="1114" class="field">[FK] associationId: String</text>
+<text x="750" y="1132" class="field">[FK] sourceId: String</text>
+<rect x="1042" y="1026" width="270" height="86" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1042" y="1026" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="1042" y="1053" width="270" height="7" fill="#688d2e" />
+<text x="1056" y="1048" class="table-title">FarmingSiteFarmer</text>
+<text x="1056" y="1078" class="field">[PK|FK] siteId: String</text>
+<text x="1056" y="1096" class="field">[PK|FK] farmerId: String</text>
+<rect x="430" y="1098" width="270" height="86" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="1098" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="1125" width="270" height="7" fill="#688d2e" />
+<text x="444" y="1120" class="table-title">Crop</text>
+<text x="444" y="1150" class="field">[PK] id: String</text>
+<text x="444" y="1168" class="field">[FK] sourceId: String</text>
+<rect x="1042" y="1134" width="270" height="140" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1042" y="1134" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="1042" y="1161" width="270" height="7" fill="#688d2e" />
+<text x="1056" y="1156" class="table-title">CultivationRecord</text>
+<text x="1056" y="1186" class="field">[PK] id: String</text>
+<text x="1056" y="1204" class="field">[FK] siteId: String</text>
+<text x="1056" y="1222" class="field">[FK] cropId: String</text>
+<text x="1056" y="1240" class="field">[FK] farmerId: String</text>
+<text x="1056" y="1258" class="field">[FK] sourceId: String</text>
+<rect x="736" y="1170" width="270" height="158" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="1170" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="736" y="1197" width="270" height="7" fill="#688d2e" />
+<text x="750" y="1192" class="table-title">HarvestRecord</text>
+<text x="750" y="1222" class="field">[PK] id: String</text>
+<text x="750" y="1240" class="field">[FK] cultivationId: String</text>
+<text x="750" y="1258" class="field">[FK] siteId: String</text>
+<text x="750" y="1276" class="field">[FK] cropId: String</text>
+<text x="750" y="1294" class="field">[FK] farmerId: String</text>
+<text x="750" y="1312" class="field">[FK] sourceId: String</text>
+<rect x="430" y="1206" width="270" height="140" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="1206" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="1233" width="270" height="7" fill="#688d2e" />
+<text x="444" y="1228" class="table-title">SeasonalCropCalendar</text>
+<text x="444" y="1258" class="field">[PK] id: String</text>
+<text x="444" y="1276" class="field">[FK] cropId: String</text>
+<text x="444" y="1294" class="field">[FK] barangayId: String</text>
+<text x="444" y="1312" class="field">[FK] siteId: String</text>
+<text x="444" y="1330" class="field">[FK] sourceId: String</text>
+<rect x="1042" y="1296" width="270" height="122" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1042" y="1296" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="1042" y="1323" width="270" height="7" fill="#688d2e" />
+<text x="1056" y="1318" class="table-title">MarketPriceObservation</text>
+<text x="1056" y="1348" class="field">[PK] id: String</text>
+<text x="1056" y="1366" class="field">[FK] cropId: String</text>
+<text x="1056" y="1384" class="field">[FK] barangayId: String</text>
+<text x="1056" y="1402" class="field">[FK] sourceId: String</text>
+<rect x="736" y="1350" width="270" height="140" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="736" y="1350" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="736" y="1377" width="270" height="7" fill="#688d2e" />
+<text x="750" y="1372" class="table-title">CropAvailabilityObservation</text>
+<text x="750" y="1402" class="field">[PK] id: String</text>
+<text x="750" y="1420" class="field">[FK] cropId: String</text>
+<text x="750" y="1438" class="field">[FK] barangayId: String</text>
+<text x="750" y="1456" class="field">[FK] siteId: String</text>
+<text x="750" y="1474" class="field">[FK] sourceId: String</text>
+<rect x="430" y="1368" width="270" height="122" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="1368" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="1395" width="270" height="7" fill="#688d2e" />
+<text x="444" y="1390" class="table-title">SupplyReport</text>
+<text x="444" y="1420" class="field">[PK] id: String</text>
+<text x="444" y="1438" class="field">[FK] cropId: String</text>
+<text x="444" y="1456" class="field">[FK] barangayId: String</text>
+<text x="444" y="1474" class="field">[FK] sourceId: String</text>
+<rect x="1042" y="1440" width="270" height="158" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1042" y="1440" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="1042" y="1467" width="270" height="7" fill="#688d2e" />
+<text x="1056" y="1462" class="table-title">AgriculturalSaleRecord</text>
+<text x="1056" y="1492" class="field">[PK] id: String</text>
+<text x="1056" y="1510" class="field">[FK] cropId: String</text>
+<text x="1056" y="1528" class="field">[FK] barangayId: String</text>
+<text x="1056" y="1546" class="field">[FK] siteId: String</text>
+<text x="1056" y="1564" class="field">[FK] farmerId: String</text>
+<text x="1056" y="1582" class="field">[FK] sourceId: String</text>
+<rect x="430" y="1512" width="270" height="140" rx="7" fill="#ffffff" stroke="#688d2e" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="430" y="1512" width="270" height="34" rx="7" fill="#688d2e" />
+<rect x="430" y="1539" width="270" height="7" fill="#688d2e" />
+<text x="444" y="1534" class="table-title">AgriculturalStatistic</text>
+<text x="444" y="1564" class="field">[PK] id: String</text>
+<text x="444" y="1582" class="field">[FK] cropId: String</text>
+<text x="444" y="1600" class="field">[FK] barangayId: String</text>
+<text x="444" y="1618" class="field">[FK] siteId: String</text>
+<text x="444" y="1636" class="field">[FK] sourceId: String</text>
+<rect x="1400" y="780" width="270" height="68" rx="7" fill="#ffffff" stroke="#777777" stroke-width="1.4" filter="url(#shadow)" />
+<rect x="1400" y="780" width="270" height="34" rx="7" fill="#777777" />
+<rect x="1400" y="807" width="270" height="7" fill="#777777" />
+<text x="1414" y="802" class="table-title">TranslationOverride</text>
+<text x="1414" y="832" class="field">[PK] id: String</text></g>
+  <g id="legend">
+    <rect x="60" y="2144" width="545" height="42" rx="7" fill="#ffffff" stroke="#d1d5db"/>
+    <text x="78" y="2170" class="legend">[PK] primary key    [FK] foreign key    [UK] unique key    Arrow points to the dependent table</text>
+  </g>
+</svg>
